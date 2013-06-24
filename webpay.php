@@ -201,7 +201,7 @@ function woocommerce_gateway_webpay_init() {
             $this->redirect_page_id = $this->settings['redirect_page_id'];
             // Actions
             add_action('woocommerce_update_options_payment_gateways', array(&$this, 'process_admin_options'));
-            add_action('woocommerce_settings_saved', array(&$this, 'save_tbk_config'));
+//            add_action('woocommerce_settings_saved', array(&$this, 'save_tbk_config'));
             add_action('woocommerce_receipt_webpay', array(&$this, 'receipt_page'));
             add_action('woocommerce_thankyou_webpay', array(&$this, 'thankyou_page'));
         }
@@ -801,11 +801,11 @@ jQuery(function(){
             echo $this->msg;
         }
 
-        // Go wild in here
+                
     }
 
     /**
-     * Add the Gateway to WooCommerce
+     * Agrega el Gateway recién creado a la lista de gateways de woocommerce
      * */
     function woocommerce_add_gateway_webpay_gateway($methods) {
         $methods[] = 'Wc_Webpay';
