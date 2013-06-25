@@ -29,7 +29,7 @@ function add_webpay_gateway_class( $methods ) {
 add_filter( 'woocommerce_payment_gateways', 'add_webpay_gateway_class' );
 
 function init_woocommerce_webpay() {
-	class WC_WebPay extends WC_Gateway {
+	class WC_WebPay extends WC_Payment_Gateway {
             
             public function __construct() {
                 $this->id = "WebPay GateWay ";
