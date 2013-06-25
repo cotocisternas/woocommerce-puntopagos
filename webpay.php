@@ -67,9 +67,8 @@ function init_woocommerce_webpay() {
             $this->description = $this->get_option('description');
             $this->liveurl = $this->settings['cgiurl'];
             $this->macpath = $this->settings['macpath'];
-            
-            //$this->redirect_page_id = $this->settings['redirect_page_id'];
 
+            //$this->redirect_page_id = $this->settings['redirect_page_id'];
             // Actions
             add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
             add_action('woocommerce_thankyou_webpay', array($this, 'thankyou_page'));
@@ -99,6 +98,18 @@ function init_woocommerce_webpay() {
                     'description' => __('', 'woocommerce'),
                     'default' => __('Web Pay Plus', 'woocommerce')
                 ),
+                'description' => array(
+                    'title' => __('Customer Message', 'woocommerce'),
+                    'type' => 'textarea',
+                    'description' => __('Give the customer instructions for paying via BACS, and let them know that their order won\'t be shipping until the money is received.', 'woocommerce'),
+                    'default' => __('Make your payment directly into our bank account. Please use your Order ID as the payment reference. Your order wont be shipped until the funds have cleared in our account.', 'woocommerce')
+                ),
+                'account_details' => array(
+                    'title' => __('Detalles de WebPay', 'woocommerce'),
+                    'type' => 'title',
+                    'description' => __('Optionally enter your bank details below for customers to pay into.', 'woocommerce'),
+                    'default' => ''
+                ),
                 'cgiurl' => array(
                     'title' => __('CGI URL', 'woocommerce'),
                     'type' => 'text',
@@ -111,107 +122,7 @@ function init_woocommerce_webpay() {
                     'description' => __('url like : /var/www/webpayconector/cgi-bin', 'woocommerce'),
                     'default' => __('/var/www/webpayconector/cgi-bin', 'woocommerce')
                 ),
-                'description' => array(
-                    'title' => __('Customer Message', 'woocommerce'),
-                    'type' => 'textarea',
-                    'default' => __('Sistema de Pagos a través de tarjetas de crédito y redcompra usando WebPayPlus.', 'woocommerce')
-                ),
-                'idcomercio' => array(
-                    'title' => __('IDCOMERCIO', 'woocommerce'),
-                    'type' => 'text',
-                    'description' => __('IDCOMERCIO of tbk_config.dat', 'woocommerce'),
-                    'default' => __('597026007976', 'woocommerce')
-                ),
-                'medcom' => array(
-                    'title' => __('MEDCOM', 'woocommerce'),
-                    'type' => 'text',
-                    'description' => __('MEDCOM of tbk_config.dat', 'woocommerce'),
-                    'default' => __('2', 'woocommerce')
-                ),
-                'tbk_key_id' => array(
-                    'title' => __('TBK_KEY_ID', 'woocommerce'),
-                    'type' => 'text',
-                    'description' => __('TBK_KEY_ID of tbk_config.dat', 'woocommerce'),
-                    'default' => __('101', 'woocommerce')
-                ),
-                'vericom' => array(
-                    'title' => __('PARAMVERIFCOM', 'woocommerce'),
-                    'type' => 'text',
-                    'description' => __('PARAMVERIFCOM of tbk_config.dat', 'woocommerce'),
-                    'default' => __('1', 'woocommerce')
-                ),
-                'urlcgicom' => array(
-                    'title' => __('URLCGICOM', 'woocommerce'),
-                    'type' => 'text',
-                    'description' => __('URLCGICOM of tbk_config.dat', 'woocommerce'),
-                    'default' => __('http://54.243.133.13/cgi-bin/tbk_bp_resultado.cgi', 'woocommerce')
-                ),
-                'servercom' => array(
-                    'title' => __('SERVERCOM', 'woocommerce'),
-                    'type' => 'text',
-                    'description' => __('SERVERCOM of tbk_config.dat', 'woocommerce'),
-                    'default' => __('54.243.133.13', 'woocommerce')
-                ),
-                'portcom' => array(
-                    'title' => __('PORTCOM', 'woocommerce'),
-                    'type' => 'text',
-                    'description' => __('PORTCOM of tbk_config.dat', 'woocommerce'),
-                    'default' => __('80', 'woocommerce')
-                ),
-                'whitelist' => array(
-                    'title' => __('WHITELISTCOM', 'woocommerce'),
-                    'type' => 'text',
-                    'description' => __('WHITELISTCOM of tbk_config.dat', 'woocommerce'),
-                    'default' => __('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz 0123456789./:=&?_', 'woocommerce')
-                ),
-                'host' => array(
-                    'title' => __('HOST', 'woocommerce'),
-                    'type' => 'text',
-                    'description' => __('HOST of tbk_config.dat', 'woocommerce'),
-                    'default' => __('54.243.133.13', 'woocommerce')
-                ),
-                'wport' => array(
-                    'title' => __('WPORT', 'woocommerce'),
-                    'type' => 'text',
-                    'description' => __('WPORT of tbk_config.dat', 'woocommerce'),
-                    'default' => __('80', 'woocommerce')
-                ),
-                'cgitra' => array(
-                    'title' => __('URLCGITRA', 'woocommerce'),
-                    'type' => 'text',
-                    'description' => __('URLCGITRA of tbk_config.dat', 'woocommerce'),
-                    'default' => __('/filtroUnificado/bp_revision.cgi', 'woocommerce')
-                ),
-                'cgimedtra' => array(
-                    'title' => __('URLCGIMEDTRA', 'woocommerce'),
-                    'type' => 'text',
-                    'description' => __('URLCGIMEDTRA of tbk_config.dat', 'woocommerce'),
-                    'default' => __('/filtroUnificado/bp_validacion.cgi', 'woocommerce')
-                ),
-                'servertra' => array(
-                    'title' => __('SERVERTRA', 'woocommerce'),
-                    'type' => 'text',
-                    'description' => __('SERVERTRA of tbk_config.dat', 'woocommerce'),
-                    'default' => __('https://certificacion.webpay.cl', 'woocommerce')
-                ),
-                'porttra' => array(
-                    'title' => __('PORTTRA', 'woocommerce'),
-                    'type' => 'text',
-                    'description' => __('PORTTRA of tbk_config.dat', 'woocommerce'),
-                    'default' => __('6443', 'woocommerce')
-                ),
-                'conf_tra' => array(
-                    'title' => __('PREFIJO_CONF_TR', 'woocommerce'),
-                    'type' => 'text',
-                    'description' => __('PREFIJO_CONF_TR of tbk_config.dat', 'woocommerce'),
-                    'default' => __('HTML_', 'woocommerce')
-                ),
-                'html_tr_normal' => array(
-                    'title' => __('HTML_TR_NORMAL', 'woocommerce'),
-                    'type' => 'hidden',
-                    'description' => __('HTML_TR_NORMAL of tbk_config.dat', 'woocommerce'),
-                    'default' => __('http://empresasctm.cl/webpayconector/wordpress/?page_id=xt_compra&pay=webpay', 'woocommerce')
-                ),
+                
             );
         }
 
@@ -306,6 +217,216 @@ function init_woocommerce_webpay() {
                 ?></ul><?php
         }
 
+        function receipt_page($order) {
+            echo '<p>' . __('Gracias por tu pedido, por favor haz click a continuación para pagar con webpay', 'woocommerce') . '</p>';
+            echo $this->generate_webpay_form($order);
+        }
+
+        public function generate_webpay_form($order_id) {
+            global $woocommerce;
+            $order = &new WC_Order($order_id);
+            $redirect_url = ($this->redirect_page_id == "" || $this->redirect_page_id == 0) ? get_site_url() . "/" : get_permalink($this->redirect_page_id);
+            $order_id = $order_id;
+            $order_key = $order->order_key;
+
+            $permalinkStructure = get_option('permalink_structure');
+
+            if (!empty($permalinkStructure))
+                $queryStr = '?';
+            else
+                $queryStr = '&';
+
+
+            $TBK_MONTO = round($order->order_total);
+            $TBK_ORDEN_COMPRA = $order_id;
+            $TBK_ID_SESION = date("Ymdhis");
+
+            mkdir(dirname(__FILE__), 0777);
+            chmod(dirname(__FILE__), 0777);
+
+            //Archivos de datos para uso de pagina de cierre                    
+            if (!is_dir(dirname(__FILE__) . "/comun")) {
+                mkdir(dirname(__FILE__) . "/comun", 0777);
+                chmod(dirname(__FILE__) . "/comun", 0777);
+            }
+
+            $myPath = dirname(__FILE__) . "/comun/dato$TBK_ID_SESION.log";
+            /*             * **************** FIN CONFIGURACION **************** */
+            //formato Moneda
+            $partesMonto = split(",", $TBK_MONTO);
+            $TBK_MONTO = $partesMonto[0] . "00";
+            //Grabado de datos en archivo de transaccion
+            $fic = fopen($myPath, "w+");
+            $linea = "$TBK_MONTO;$TBK_ORDEN_COMPRA";
+            fwrite($fic, $linea);
+            fclose($fic);
+
+
+            $ccavenue_args = array(
+                'TBK_TIPO_TRANSACCION' => "TR_NORMAL",
+                'TBK_MONTO' => $TBK_MONTO,
+                'TBK_ORDEN_COMPRA' => $TBK_ORDEN_COMPRA,
+                'TBK_ID_SESION' => $TBK_ID_SESION,
+                'TBK_URL_EXITO' => $redirect_url . $queryStr . "status=success&order=$order_id&key=$order_key",
+                'TBK_URL_FRACASO' => $redirect_url . $queryStr . "status=failure&order=$order_id&key=$order_key",
+            );
+
+            $woopayment = array();
+            foreach ($ccavenue_args as $key => $value) {
+                $woopayment[] = "<input type='hidden' name='$key' value='$value'/>";
+            }
+
+            return '<form action="' . $this->liveurl . '" method="post" id="webpayplus">
+                ' . implode('', $woopayment) . '
+                <input type="submit" class="button" id="submit_webpayplus_payment_form" value="Pagar" /> <a class="button cancel" href="' . $order->get_cancel_order_url() . '">Cancel</a>
+                <script type="text/javascript">
+jQuery(function(){
+    jQuery("body").block(
+            {
+                message: "<img src=\"' . $woocommerce->plugin_url() . '/assets/images/ajax-loader.gif\" alt=\"Redirecting�\" style=\"float:left; margin-right: 10px;\" />' . __('Thank you for your order. We are now redirecting you to Webpay to make payment.', 'mrova') . '",
+                    overlayCSS:
+            {
+                background: "#fff",
+                    opacity: 0.6
+        },
+        css: {
+            padding:        20,
+                textAlign:      "center",
+                color:          "#555",
+                border:         "3px solid #aaa",
+                backgroundColor:"#fff",
+                cursor:         "wait",
+                lineHeight:"32px"
+        }
+        });
+        jQuery("#submit_webpayplus_payment_form").click();
+
+        });
+                    </script>
+                </form>';
+        }
+
+        // get all pages
+        function get_pages($title = false, $indent = true) {
+            $wp_pages = get_pages('sort_column=menu_order');
+            $page_list = array();
+            if ($title)
+                $page_list[] = $title;
+            foreach ($wp_pages as $page) {
+                $prefix = '';
+                // show indented child pages?
+                if ($indent) {
+                    $has_parent = $page->post_parent;
+                    while ($has_parent) {
+                        $prefix .= ' - ';
+                        $next_page = get_page($has_parent);
+                        $has_parent = $next_page->post_parent;
+                    }
+                }
+                // add to page list array array
+                $page_list[$page->ID] = $prefix . $page->post_title;
+            }
+            return $page_list;
+        }
+
+        /**
+         *      Check payment response from web pay plus
+         * */
+        function check_webpay_response() {
+            global $woocommerce;
+
+
+            if ($_REQUEST['TBK_ORDEN_COMPRA'] and $_REQUEST['TBK_ID_SESION']) {
+                $order_id_time = $_REQUEST['order'];
+                $order_id = explode('_', $_REQUEST['order']);
+                $order_id = (int) $order_id[0];
+
+                if ($order_id != '') {
+                    try {
+                        $order = new WC_Order($order_id);
+
+                        $status = $_REQUEST['status'];
+                        if ($order->status !== 'completed') {
+                            if ($status == 'success') {
+                                /* $order -> payment_complete();
+                                  $woocommerce -> cart -> empty_cart();
+                                  $order -> update_status('completed'); */
+
+                                // Mark as on-hold (we're awaiting the cheque)
+                                $order->update_status('on-hold');
+
+                                // Reduce stock levels
+                                $order->reduce_order_stock();
+
+                                // Remove cart
+                                $woocommerce->cart->empty_cart();
+
+                                // Empty awaiting payment session
+                                unset($_SESSION['order_awaiting_payment']);
+//
+//                                log_me('START WEBPAY RESPONSE ARRAY REQUEST');
+//                                log_me($_REQUEST);
+//                                log_me('END WEBPAY RESPONSE ARRAY REQUEST');
+                                //RESCATO EL ARCHIVO
+                                $TBK_ID_SESION
+                                        = $_POST["TBK_ID_SESION"];
+                                $TBK_ORDEN_COMPRA
+                                        = $_POST["TBK_ORDEN_COMPRA"];
+                                /*                                 * **************** CONFIGURAR AQUI ****************** */
+
+
+                                //Archivo previamente generado para rescatar la información.
+                                $myPath = dirname(__FILE__) . "/comun/MAC01Normal$TBK_ID_SESION.txt";
+                                /*                                 * **************** FIN CONFIGURACION **************** */
+                                //Rescate de los valores informados por transbank
+                                $fic = fopen($myPath, "r");
+                                $linea = fgets($fic);
+                                fclose($fic);
+                                $detalle = explode("&", $linea);
+
+                                $TBK = array(
+                                    'TBK_ORDEN_COMPRA' => explode("=", $detalle[0]),
+                                    'TBK_TIPO_TRANSACCION' => explode("=", $detalle[1]),
+                                    'TBK_RESPUESTA' => explode("=", $detalle[2]),
+                                    'TBK_MONTO' => explode("=", $detalle[3]),
+                                    'TBK_CODIGO_AUTORIZACION' => explode("=", $detalle[4]),
+                                    'TBK_FINAL_NUMERO_TARJETA' => explode("=", $detalle[5]),
+                                    'TBK_FECHA_CONTABLE' => explode("=", $detalle[6]),
+                                    'TBK_FECHA_TRANSACCION' => explode("=", $detalle[7]),
+                                    'TBK_HORA_TRANSACCION' => explode("=", $detalle[8]),
+                                    'TBK_ID_TRANSACCION' => explode("=", $detalle[10]),
+                                    'TBK_TIPO_PAGO' => explode("=", $detalle[11]),
+                                    'TBK_NUMERO_CUOTAS' => explode("=", $detalle[12]),
+                                        //'TBK_MAC' => explode("=", $detalle[13]),
+                                );
+
+//                                log_me("INICIO INFO PARA AGREGAR A LA DB EN CHECK RESPONSE");
+//                                log_me($TBK);  
+//                                log_me("FIN INFO PARA AGREGAR A LA DB EN CHECK RESPONSE");
+//                                
+                                log_me("INSERTANDO EN LA BDD");
+                                woocommerce_payment_complete_add_data_webpay($order_id, $TBK);
+                                log_me("TERMINANDO INSERSIÓN");
+                            } elseif ($status == 'failure') {
+                                $order->update_status('failed');
+                                $order->add_order_note('Failed');
+
+                                //Si falla no limpio el carrito para poder pagar nuevamente
+                                //$woocommerce->cart->empty_cart();
+                            }
+                        } else {
+                            $this->msg = 'order already completed.';
+                            add_action('the_content', array(&$this, 'thankyouContent'));
+                        }
+                    } catch (Exception $e) {
+                        // $errorOccurred = true;
+                        $this->msg = "Error occured while processing your request";
+                    }
+                    //add_action('the_content', array(&$this, 'thankyouContent'));
+                }
+            }
+        }
+
         /**
          * Process the payment and return the result
          *
@@ -333,8 +454,8 @@ function init_woocommerce_webpay() {
                 'redirect' => add_query_arg('key', $order->order_key, add_query_arg('order', $order->id, get_permalink(woocommerce_get_page_id('thanks'))))
             );
         }
-        
-                public function xt_compra() {
+
+        public function xt_compra() {
             global $webpay_table_name;
             global $wpdb;
             global $woocommerce;
@@ -390,9 +511,9 @@ function init_woocommerce_webpay() {
             if (!is_numeric($order_id))
                 die('RECHAZADO');
 
-            if($TBK_RESPUESTA==-1)
+            if ($TBK_RESPUESTA == -1)
                 die("ACEPTADO");
-            
+
             //Validar que la orden exista         
             $order = new WC_Order($order_id);
             log_me($order->status, $sufijo);
@@ -462,7 +583,8 @@ function init_woocommerce_webpay() {
             if ($acepta == true) {
                 exec($cmdline, $result, $retint);
                 if ($result [0] == "CORRECTO")
-                    $acepta = true; else
+                    $acepta = true;
+                else
                     $acepta = false;
             }
             ?>
@@ -473,7 +595,7 @@ function init_woocommerce_webpay() {
                     ACEPTADO
                 <?php } else { ?>
                     RECHAZADO
-                <?php } exit; ?>
+            <?php } exit; ?>
             </html>
 
             <?php
