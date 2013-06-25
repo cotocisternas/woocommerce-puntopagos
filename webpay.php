@@ -42,7 +42,7 @@ function init_woocommerce_webpay() {
             $this->id = 'webpay';
             //$this->icon = apply_filters('woocommerce_bacs_icon', '');
             $this->has_fields = false;
-            $this->method_title = __('WebPay', 'woocommerce');
+            $this->method_title = __('WebPay GateWay', 'woocommerce');
 
             // Load the settings.
             $this->init_form_fields();
@@ -78,14 +78,14 @@ function init_woocommerce_webpay() {
                 'enabled' => array(
                     'title' => __('Enable/Disable', 'woocommerce'),
                     'type' => 'checkbox',
-                    'label' => __('Enable Bank Transfer', 'woocommerce'),
+                    'label' => __('Habilita el Pago por WebPay', 'woocommerce'),
                     'default' => 'yes'
                 ),
                 'title' => array(
                     'title' => __('Title', 'woocommerce'),
                     'type' => 'text',
                     'description' => __('This controls the title which the user sees during checkout.', 'woocommerce'),
-                    'default' => __('Direct Bank Transfer', 'woocommerce'),
+                    'default' => __('WebPay Plus', 'woocommerce'),
                     'desc_tip' => true,
                 ),
                 'description' => array(
@@ -134,6 +134,11 @@ function init_woocommerce_webpay() {
                     'type' => 'text',
                     'default' => ''
                 ),
+                'CGI' => array(
+                    'title' => __('CGI ROUTE', 'woocommerce'),
+                    'type' => 'text',
+                    'default' => ''
+                ),
             );
         }
 
@@ -149,68 +154,28 @@ function init_woocommerce_webpay() {
             <h3><?php _e('BACS Payment', 'woocommerce'); ?></h3>
             <p><?php _e('Allows payments by BACS (Bank Account Clearing System), more commonly known as direct bank/wire transfer.', 'woocommerce'); ?></p>
             <table class="form-table">
-            <?php
-            // Generate the HTML For the settings form.
-            $this->generate_settings_html();
-            ?>
-            </table><!--/.form-table-->
                 <?php
-            }
+                // Generate the HTML For the settings form.
+                $this->generate_settings_html();
+                ?>
+            </table><!--/.form-table-->
+            <?php
+        }
 
-            /**
-             * Output for the order received page.
-             *
-             * @access public
-             * @return void
-             */
-            function thankyou_page() {
-                if ($description = $this->get_description())
-                    echo wpautop(wptexturize(wp_kses_post($description)));
+        /**
+         * Output for the order received page.
+         *
+         * @access public
+         * @return void
+         */
+        function thankyou_page() {
+            if ($description = $this->get_description())
+                echo wpautop(wptexturize(wp_kses_post($description)));
 
-                echo '<h2>' . __('Our Details', 'woocommerce') . '</h2>';
+            echo '<h2>' . __('Our Details', 'woocommerce') . '</h2>';
 
-                echo '<ul class="order_details bacs_details">';
+            echo '<ul class="order_details bacs_details">';
 
-                $fields = apply_filters('woocommerce_bacs_fields', array(
-                    'account_name' => __('Account Name', 'woocommerce'),
-                    'account_number' => __('Account Number', 'woocommerce'),
-                    'sort_code' => __('Sort Code', 'woocommerce'),
-                    'bank_name' => __('Bank Name', 'woocommerce'),
-                    'iban' => __('IBAN', 'woocommerce'),
-                    'bic' => __('BIC', 'woocommerce')
-                ));
-
-                foreach ($fields as $key => $value) {
-                    if (!empty($this->$key)) {
-                        echo '<li class="' . esc_attr($key) . '">' . esc_attr($value) . ': <strong>' . wptexturize($this->$key) . '</strong></li>';
-                    }
-                }
-
-                echo '</ul>';
-            }
-
-            /**
-             * Add content to the WC emails.
-             *
-             * @access public
-             * @param WC_Order $order
-             * @param bool $sent_to_admin
-             * @return void
-             */
-            function email_instructions($order, $sent_to_admin) {
-
-                if ($sent_to_admin)
-                    return;
-
-                if ($order->status !== 'on-hold')
-                    return;
-
-                if ($order->payment_method !== 'bacs')
-                    return;
-
-                if ($description = $this->get_description())
-                    echo wpautop(wptexturize($description));
-                ?><h2><?php _e('Our Details', 'woocommerce') ?></h2><ul class="order_details bacs_details"><?php
             $fields = apply_filters('woocommerce_bacs_fields', array(
                 'account_name' => __('Account Name', 'woocommerce'),
                 'account_number' => __('Account Number', 'woocommerce'),
@@ -220,43 +185,84 @@ function init_woocommerce_webpay() {
                 'bic' => __('BIC', 'woocommerce')
             ));
 
-            foreach ($fields as $key => $value) :
-                if (!empty($this->$key)) :
-                    echo '<li class="' . $key . '">' . $value . ': <strong>' . wptexturize($this->$key) . '</strong></li>';
-                endif;
-            endforeach;
-            ?></ul><?php
+            foreach ($fields as $key => $value) {
+                if (!empty($this->$key)) {
+                    echo '<li class="' . esc_attr($key) . '">' . esc_attr($value) . ': <strong>' . wptexturize($this->$key) . '</strong></li>';
+                }
             }
 
-            /**
-             * Process the payment and return the result
-             *
-             * @access public
-             * @param int $order_id
-             * @return array
-             */
-            function process_payment($order_id) {
-                global $woocommerce;
+            echo '</ul>';
+        }
 
-                $order = new WC_Order($order_id);
+        /**
+         * Add content to the WC emails.
+         *
+         * @access public
+         * @param WC_Order $order
+         * @param bool $sent_to_admin
+         * @return void
+         */
+        function email_instructions($order, $sent_to_admin) {
 
-                // Mark as on-hold (we're awaiting the payment)
-                $order->update_status('on-hold', __('Awaiting BACS payment', 'woocommerce'));
+            if ($sent_to_admin)
+                return;
 
-                // Reduce stock levels
-                $order->reduce_order_stock();
+            if ($order->status !== 'on-hold')
+                return;
 
-                // Remove cart
-                $woocommerce->cart->empty_cart();
+            if ($order->payment_method !== 'bacs')
+                return;
 
-                // Return thankyou redirect
-                return array(
-                    'result' => 'success',
-                    'redirect' => add_query_arg('key', $order->order_key, add_query_arg('order', $order->id, get_permalink(woocommerce_get_page_id('thanks'))))
-                );
-            }
+            if ($description = $this->get_description())
+                echo wpautop(wptexturize($description));
+            ?><h2><?php _e('Our Details', 'woocommerce') ?></h2><ul class="order_details bacs_details"><?php
+                $fields = apply_filters('woocommerce_bacs_fields', array(
+                    'account_name' => __('Account Name', 'woocommerce'),
+                    'account_number' => __('Account Number', 'woocommerce'),
+                    'sort_code' => __('Sort Code', 'woocommerce'),
+                    'bank_name' => __('Bank Name', 'woocommerce'),
+                    'iban' => __('IBAN', 'woocommerce'),
+                    'bic' => __('BIC', 'woocommerce')
+                ));
 
-        }//End of the GateWay Class
+                foreach ($fields as $key => $value) :
+                    if (!empty($this->$key)) :
+                        echo '<li class="' . $key . '">' . $value . ': <strong>' . wptexturize($this->$key) . '</strong></li>';
+                    endif;
+                endforeach;
+                ?></ul><?php
+        }
+
+        /**
+         * Process the payment and return the result
+         *
+         * @access public
+         * @param int $order_id
+         * @return array
+         */
+        function process_payment($order_id) {
+            global $woocommerce;
+
+            $order = new WC_Order($order_id);
+
+            // Mark as on-hold (we're awaiting the payment)
+            $order->update_status('on-hold', __('Awaiting BACS payment', 'woocommerce'));
+
+            // Reduce stock levels
+            $order->reduce_order_stock();
+
+            // Remove cart
+            $woocommerce->cart->empty_cart();
+
+            // Return thankyou redirect
+            return array(
+                'result' => 'success',
+                'redirect' => add_query_arg('key', $order->order_key, add_query_arg('order', $order->id, get_permalink(woocommerce_get_page_id('thanks'))))
+            );
+        }
 
     }
-    ?>
+
+    //End of the GateWay Class
+}
+?>
