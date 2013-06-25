@@ -182,9 +182,9 @@ function init_woocommerce_webpay() {
             if (isset($_REQUEST['status'])):
 
                 if ($_REQUEST['status'] == "failure"):
-                    include './php/webpayError.php';
+                    include WP_PLUGIN_URL . "/" . plugin_basename(dirname(__FILE__)) . './php/webpayError.php';
                 else:
-                    include 'php/thankYouPage.php';
+                    include WP_PLUGIN_URL . "/" . plugin_basename(dirname(__FILE__)) . 'php/thankYouPage.php';
                 endif;
             endif;
         }
