@@ -61,12 +61,13 @@ function init_woocommerce_webpay() {
          */
         public function __construct() {
 
-
-            if ($_REQUEST['page_id'] == 'xt_compra') {
-                add_action('init', array(&$this, 'xt_compra'));
-            } else {
-                add_action('init', array(&$this, 'check_webpay_response'));
-            }
+            if (isset($_REQUEST['page_id'])):
+                if ($_REQUEST['page_id'] == 'xt_compra') {
+                    add_action('init', array(&$this, 'xt_compra'));
+                } else {
+                    add_action('init', array(&$this, 'check_webpay_response'));
+                }
+            endif;
 
 
 
@@ -177,34 +178,17 @@ function init_woocommerce_webpay() {
          * @return void
          */
         function thankyou_page() {
-            
-            if(isset($_REQUEST['status'])):
-                echo "<h1>Status : </h1>".$_REQUEST['status'];
+
+            if (isset($_REQUEST['status'])):
+
+                if ($_REQUEST['status'] == "failure"):
+                    include './php/webpayError.php';
+                else:
+                    include 'php/thankYouPage.php';
+                endif;
             endif;
-            if ($description = $this->get_description())
-                echo wpautop(wptexturize(wp_kses_post($description)));
-
-            echo '<h2>' . __('Our Details', 'woocommerce') . '</h2>';
-
-            echo '<ul class="order_details bacs_details">';
-
-            $fields = apply_filters('woocommerce_bacs_fields', array(
-                'account_name' => __('Account Name', 'woocommerce'),
-                'account_number' => __('Account Number', 'woocommerce'),
-                'sort_code' => __('Sort Code', 'woocommerce'),
-                'bank_name' => __('Bank Name', 'woocommerce'),
-                'iban' => __('IBAN', 'woocommerce'),
-                'bic' => __('BIC', 'woocommerce')
-            ));
-
-            foreach ($fields as $key => $value) {
-                if (!empty($this->$key)) {
-                    echo '<li class="' . esc_attr($key) . '">' . esc_attr($value) . ': <strong>' . wptexturize($this->$key) . '</strong></li>';
-                }
-            }
-
-            echo '</ul>';
         }
+
         function receipt_page($order) {
             echo '<p>' . __('Gracias por tu pedido, por favor haz click a continuación para pagar con webpay', 'woocommerce') . '</p>';
             echo $this->generate_webpay_form($order);
