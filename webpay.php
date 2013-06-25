@@ -203,6 +203,20 @@ function init_woocommerce_webpay() {
 
                     <?
                 else:
+                    ?>
+
+                    <CENTER>
+                        <B>TRANSACCIÓN Exitosa !!!</B>
+                        <TABLE>
+                            <TR><TH>Éxito</TH></TR>
+                            <TR><TD>
+                                    TBK_ID_SESION=<?PHP ECHO $TBK_ID_SESION; ?><BR>
+                                    TBK_ORDEN_COMPRA=<?PHP ECHO $TBK_ORDEN_COMPRA; ?><BR>
+                                </TD></TR>
+                        </TABLE>
+                    </CENTER>
+
+                    <?
                     if ($description = $this->get_description())
                         echo wpautop(wptexturize(wp_kses_post($description)));
 
@@ -270,13 +284,20 @@ function init_woocommerce_webpay() {
             $TBK_ORDEN_COMPRA = $order_id;
             $TBK_ID_SESION = date("Ymdhis");
 
-            mkdir(dirname(__FILE__), 0777);
-            chmod(dirname(__FILE__), 0777);
+            $filename = __FILE__;
+//            if(file_exists($filename)):
+//                if(!is_dir($filename))
+//                {
+//                    mkdir(dirname($filename), 0777);
+//                    chmod(dirname($filename), 0777);
+//                }
+//            endif;
+
 
             //Archivos de datos para uso de pagina de cierre                    
-            if (!is_dir(dirname(__FILE__) . "/comun")) {
-                mkdir(dirname(__FILE__) . "/comun", 0777);
-                chmod(dirname(__FILE__) . "/comun", 0777);
+            if (!is_dir(dirname($filename) . "/comun")) {
+                mkdir(dirname($filename) . "/comun", 0777);
+                chmod(dirname($filename) . "/comun", 0777);
             }
 
             $myPath = dirname(__FILE__) . "/comun/dato$TBK_ID_SESION.log";
