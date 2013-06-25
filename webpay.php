@@ -43,13 +43,13 @@ function init_woocommerce_webpay() {
          */
         public function __construct() {
 
-            if (isset($_REQUEST['page_id'])) {
+            
                 if ($_REQUEST['page_id'] == 'xt_compra') {
                     add_action('init', array(&$this, 'xt_compra'));
                 } else {
                     add_action('init', array(&$this, 'check_webpay_response'));
                 }
-            }
+            
 
 
             $this->id = 'webpay';
