@@ -21,19 +21,35 @@
 include_once 'admin/webpay_install.php';
 include_once 'admin/webpay_debug.php';
 
+/*
+ * Este activation Hook crea una tabla en la base de datos para mantener el registro
+ * de las transacciones.
+ */
 register_activation_hook(__FILE__, 'webpay_install');
 add_action('plugins_loaded', 'init_woocommerce_webpay');
 
+/*
+ * Se agrega nuestro Gateway de pago al array que posee WooCommerce
+ */
 function add_webpay_gateway_class($methods) {
     $methods[] = 'WC_WebPay';
     return $methods;
 }
-
 add_filter('woocommerce_payment_gateways', 'add_webpay_gateway_class');
 
+/*
+ * Se crea la clase de conexión
+ */
 function init_woocommerce_webpay() {
+    
+    /*
+     * Si la clase de la cual quiero heredar no existe no hago nada.
+     */
+    if (!class_exists('WC_Payment_Gateway'))
+        return;
 
     class WC_Webpay extends WC_Payment_Gateway {
+        
 
         /**
          * Constructor for the gateway.
@@ -53,7 +69,6 @@ function init_woocommerce_webpay() {
 
 
             $this->id = 'webpay';
-            //$this->icon = apply_filters('woocommerce_bacs_icon', '');
             $this->has_fields = false;
             $this->icon = WP_PLUGIN_URL . "/" . plugin_basename(dirname(__FILE__)) . '/images/logo.png';
             $this->method_title = __('WebPay GateWay', 'woocommerce');
@@ -68,7 +83,7 @@ function init_woocommerce_webpay() {
             $this->liveurl = $this->settings['cgiurl'];
             $this->macpath = $this->settings['macpath'];
 
-            //$this->redirect_page_id = $this->settings['redirect_page_id'];
+             
             // Actions
             add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
             add_action('woocommerce_thankyou_webpay', array($this, 'thankyou_page'));
@@ -89,7 +104,7 @@ function init_woocommerce_webpay() {
                 'enabled' => array(
                     'title' => __('Enable/Disable', 'woocommerce'),
                     'type' => 'checkbox',
-                    'label' => __('Enable Woocommerce Webpay Plus', 'woocommerce'),
+                    'label' => __('Habilita Woocommerce Webpay Plus', 'woocommerce'),
                     'default' => 'yes'
                 ),
                 'title' => array(
@@ -157,69 +172,42 @@ function init_woocommerce_webpay() {
          * @access public
          * @return void
          */
+//        function thankyou_page() {
+//            if ($description = $this->get_description())
+//                echo wpautop(wptexturize(wp_kses_post($description)));
+//
+//            echo '<h2>' . __('Our Details', 'woocommerce') . '</h2>';
+//
+//            echo '<ul class="order_details bacs_details">';
+//
+//            $fields = apply_filters('woocommerce_bacs_fields', array(
+//                'account_name' => __('Account Name', 'woocommerce'),
+//                'account_number' => __('Account Number', 'woocommerce'),
+//                'sort_code' => __('Sort Code', 'woocommerce'),
+//                'bank_name' => __('Bank Name', 'woocommerce'),
+//                'iban' => __('IBAN', 'woocommerce'),
+//                'bic' => __('BIC', 'woocommerce')
+//            ));
+//
+//            foreach ($fields as $key => $value) {
+//                if (!empty($this->$key)) {
+//                    echo '<li class="' . esc_attr($key) . '">' . esc_attr($value) . ': <strong>' . wptexturize($this->$key) . '</strong></li>';
+//                }
+//            }
+//
+//            echo '</ul>';
+//        }
+
+       
+
+//        function receipt_page($order) {
+//            echo '<p>' . __('Gracias por tu pedido, por favor haz click a continuación para pagar con webpay', 'woocommerce') . '</p>';
+//            echo $this->generate_webpay_form($order);
+//        }
+
         function thankyou_page() {
             if ($description = $this->get_description())
-                echo wpautop(wptexturize(wp_kses_post($description)));
-
-            echo '<h2>' . __('Our Details', 'woocommerce') . '</h2>';
-
-            echo '<ul class="order_details bacs_details">';
-
-            $fields = apply_filters('woocommerce_bacs_fields', array(
-                'account_name' => __('Account Name', 'woocommerce'),
-                'account_number' => __('Account Number', 'woocommerce'),
-                'sort_code' => __('Sort Code', 'woocommerce'),
-                'bank_name' => __('Bank Name', 'woocommerce'),
-                'iban' => __('IBAN', 'woocommerce'),
-                'bic' => __('BIC', 'woocommerce')
-            ));
-
-            foreach ($fields as $key => $value) {
-                if (!empty($this->$key)) {
-                    echo '<li class="' . esc_attr($key) . '">' . esc_attr($value) . ': <strong>' . wptexturize($this->$key) . '</strong></li>';
-                }
-            }
-
-            echo '</ul>';
-        }
-
-        /**
-         * Add content to the WC emails.
-         *
-         * @access public
-         * @param WC_Order $order
-         * @param bool $sent_to_admin
-         * @return void
-         */
-        function email_instructions($order, $sent_to_admin) {
-
-            if ($sent_to_admin)
-                return;
-
-            if ($order->status !== 'on-hold')
-                return;
-
-            if ($order->payment_method !== 'bacs')
-                return;
-
-            if ($description = $this->get_description())
                 echo wpautop(wptexturize($description));
-            ?><h2><?php _e('Our Details', 'woocommerce') ?></h2><ul class="order_details bacs_details"><?php
-                $fields = apply_filters('woocommerce_bacs_fields', array(
-                    'account_name' => __('Account Name', 'woocommerce'),
-                    'account_number' => __('Account Number', 'woocommerce'),
-                    'sort_code' => __('Sort Code', 'woocommerce'),
-                    'bank_name' => __('Bank Name', 'woocommerce'),
-                    'iban' => __('IBAN', 'woocommerce'),
-                    'bic' => __('BIC', 'woocommerce')
-                ));
-
-                foreach ($fields as $key => $value) :
-                    if (!empty($this->$key)) :
-                        echo '<li class="' . $key . '">' . $value . ': <strong>' . wptexturize($this->$key) . '</strong></li>';
-                    endif;
-                endforeach;
-                ?></ul><?php
         }
 
         function receipt_page($order) {
@@ -227,6 +215,11 @@ function init_woocommerce_webpay() {
             echo $this->generate_webpay_form($order);
         }
 
+        function process_payment($order_id) {
+            $order = &new WC_Order($order_id);
+            return array('result' => 'success', 'redirect' => add_query_arg('order', $order->id, add_query_arg('key', $order->order_key, get_permalink(get_option('woocommerce_pay_page_id'))))
+            );
+        }
         public function generate_webpay_form($order_id) {
             global $woocommerce;
             $order = &new WC_Order($order_id);
@@ -459,11 +452,7 @@ jQuery(function(){
 //                    'redirect' => add_query_arg('key', $order->order_key, add_query_arg('order', $order->id, get_permalink(woocommerce_get_page_id('thanks'))))
 //                );
 //            }
-        function process_payment($order_id) {
-            $order = &new WC_Order($order_id);
-            return array('result' => 'success', 'redirect' => add_query_arg('order', $order->id, add_query_arg('key', $order->order_key, get_permalink(get_option('woocommerce_pay_page_id'))))
-            );
-        }
+     
 
         function thankyouContent($content) {
             echo $this->msg;
