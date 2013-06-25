@@ -260,6 +260,8 @@ function init_woocommerce_webpay() {
         //        }
 
         function process_payment($order_id) {
+            $sufijo = "[WEBPAY - PROCESS - PAYMENT]";
+            log_me("Iniciando el proceso de pago para $order_id",$sufijo);
             $order = &new WC_Order($order_id);
             return array('result' => 'success', 'redirect' => add_query_arg('order', $order->id, add_query_arg('key', $order->order_key, get_permalink(get_option('woocommerce_pay_page_id'))))
             );
@@ -318,7 +320,7 @@ function init_woocommerce_webpay() {
             fclose($fic);
             log_me("ARCHIVO CERRADO", $SUFIJO);
 
-
+            log_me("Argumentos",$SUFIJO);
             $ccavenue_args = array(
                 'TBK_TIPO_TRANSACCION' => "TR_NORMAL",
                 'TBK_MONTO' => $TBK_MONTO,
@@ -327,7 +329,9 @@ function init_woocommerce_webpay() {
                 'TBK_URL_EXITO' => $redirect_url . $queryStr . "status=success&order=$order_id&key=$order_key",
                 'TBK_URL_FRACASO' => $redirect_url . $queryStr . "status=failure&order=$order_id&key=$order_key",
             );
-
+            log_me($ccavenue_args);
+            
+            
             $woopayment = array();
             foreach ($ccavenue_args as $key => $value) {
                 $woopayment[] = "<input type='hidden' name='$key' value='$value'/>";
@@ -520,7 +524,7 @@ function init_woocommerce_webpay() {
 
 
         function thankyouContent($content) {
-            echo $this->msg;
+            //echo $this->msg;
         }
 
         public function xt_compra() {
@@ -528,6 +532,7 @@ function init_woocommerce_webpay() {
             global $wpdb;
             global $woocommerce;
             $sufijo = "[XT_COMPRA]";
+            log_me("Iniciando xt_compra",$sufijo);
 
             //rescate de datos de POST.
             $TBK_RESPUESTA = $_POST["TBK_RESPUESTA"];
@@ -667,6 +672,7 @@ function init_woocommerce_webpay() {
             </html>
 
             <?php
+            log_me("FINALIZANDO XT_COMPRA",$sufijo);
         }
 
     }
