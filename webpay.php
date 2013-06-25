@@ -102,7 +102,7 @@ function init_woocommerce_webpay() {
                     'title' => __('Customer Message', 'woocommerce'),
                     'type' => 'textarea',
                     'description' => __('Give the customer instructions for paying via BACS, and let them know that their order won\'t be shipping until the money is received.', 'woocommerce'),
-                    'default' => __('Make your payment directly into our bank account. Please use your Order ID as the payment reference. Your order wont be shipped until the funds have cleared in our account.', 'woocommerce')
+                    //'default' => __('Make your payment directly into our bank account. Please use your Order ID as the payment reference. Your order wont be shipped until the funds have cleared in our account.', 'woocommerce')
                 ),
                 'account_details' => array(
                     'title' => __('Detalles de WebPay', 'woocommerce'),
