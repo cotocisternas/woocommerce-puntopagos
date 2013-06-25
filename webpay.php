@@ -176,45 +176,45 @@ function init_woocommerce_webpay() {
          * @access public
          * @return void
          */
-//        function thankyou_page() {
-//            if ($description = $this->get_description())
-//                echo wpautop(wptexturize(wp_kses_post($description)));
-//
-//            echo '<h2>' . __('Our Details', 'woocommerce') . '</h2>';
-//
-//            echo '<ul class="order_details bacs_details">';
-//
-//            $fields = apply_filters('woocommerce_bacs_fields', array(
-//                'account_name' => __('Account Name', 'woocommerce'),
-//                'account_number' => __('Account Number', 'woocommerce'),
-//                'sort_code' => __('Sort Code', 'woocommerce'),
-//                'bank_name' => __('Bank Name', 'woocommerce'),
-//                'iban' => __('IBAN', 'woocommerce'),
-//                'bic' => __('BIC', 'woocommerce')
-//            ));
-//
-//            foreach ($fields as $key => $value) {
-//                if (!empty($this->$key)) {
-//                    echo '<li class="' . esc_attr($key) . '">' . esc_attr($value) . ': <strong>' . wptexturize($this->$key) . '</strong></li>';
-//                }
-//            }
-//
-//            echo '</ul>';
-//        }
-//        function receipt_page($order) {
-//            echo '<p>' . __('Gracias por tu pedido, por favor haz click a continuación para pagar con webpay', 'woocommerce') . '</p>';
-//            echo $this->generate_webpay_form($order);
-//        }
-
         function thankyou_page() {
             if ($description = $this->get_description())
-                echo wpautop(wptexturize($description));
-        }
+                echo wpautop(wptexturize(wp_kses_post($description)));
 
+            echo '<h2>' . __('Our Details', 'woocommerce') . '</h2>';
+
+            echo '<ul class="order_details bacs_details">';
+
+            $fields = apply_filters('woocommerce_bacs_fields', array(
+                'account_name' => __('Account Name', 'woocommerce'),
+                'account_number' => __('Account Number', 'woocommerce'),
+                'sort_code' => __('Sort Code', 'woocommerce'),
+                'bank_name' => __('Bank Name', 'woocommerce'),
+                'iban' => __('IBAN', 'woocommerce'),
+                'bic' => __('BIC', 'woocommerce')
+            ));
+
+            foreach ($fields as $key => $value) {
+                if (!empty($this->$key)) {
+                    echo '<li class="' . esc_attr($key) . '">' . esc_attr($value) . ': <strong>' . wptexturize($this->$key) . '</strong></li>';
+                }
+            }
+
+            echo '</ul>';
+        }
         function receipt_page($order) {
             echo '<p>' . __('Gracias por tu pedido, por favor haz click a continuación para pagar con webpay', 'woocommerce') . '</p>';
             echo $this->generate_webpay_form($order);
         }
+
+//        function thankyou_page() {
+//            if ($description = $this->get_description())
+//                echo wpautop(wptexturize($description));
+//        }
+//
+//        function receipt_page($order) {
+//            echo '<p>' . __('Gracias por tu pedido, por favor haz click a continuación para pagar con webpay', 'woocommerce') . '</p>';
+//            echo $this->generate_webpay_form($order);
+//        }
 
         function process_payment($order_id) {
             $order = &new WC_Order($order_id);
