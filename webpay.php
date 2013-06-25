@@ -295,16 +295,16 @@ function init_woocommerce_webpay() {
 //                }
 //            endif;
             //Archivos de datos para uso de pagina de cierre
-            
-            log_me("Entrando a la verificación de carpetas",$SUFIJO);
+
+            log_me("Entrando a la verificación de carpetas", $SUFIJO);
             if (!is_dir(dirname($filename) . "/comun")) {
                 mkdir(dirname($filename) . "/comun", 0777);
                 chmod(dirname($filename) . "/comun", 0777);
             }
 
             $myPath = dirname(__FILE__) . "/comun/dato$TBK_ID_SESION.log";
-            
-            log_me("Se utilizará $myPath para guardar los datos",$SUFIJO);
+
+            log_me("Se utilizará $myPath para guardar los datos", $SUFIJO);
             /*             * **************** FIN CONFIGURACION **************** */
             //formato Moneda
             $partesMonto = split(",", $TBK_MONTO);
@@ -312,11 +312,11 @@ function init_woocommerce_webpay() {
             //Grabado de datos en archivo de transaccion
             $fic = fopen($myPath, "w+");
             $linea = "$TBK_MONTO;$TBK_ORDEN_COMPRA";
-            
-            log_me("Preparando para escribir $linea en $myPath",$SUFIJO);
+
+            log_me("Preparando para escribir $linea en $myPath", $SUFIJO);
             fwrite($fic, $linea);
             fclose($fic);
-            log_me("ARCHIVO CERRADO",$SUFIJO);
+            log_me("ARCHIVO CERRADO", $SUFIJO);
 
 
             $ccavenue_args = array(
@@ -391,13 +391,15 @@ function init_woocommerce_webpay() {
          * */
         function check_webpay_response() {
             global $woocommerce;
+            $SUFIJO = "[WEBPAY - RESPONSE]";
 
+            log_me("Entrando al Webpay Response", $SUFIJO);
 
             if ($_REQUEST['TBK_ORDEN_COMPRA'] and $_REQUEST['TBK_ID_SESION']) {
                 $order_id_time = $_REQUEST['order'];
                 $order_id = explode('_', $_REQUEST['order']);
                 $order_id = (int) $order_id[0];
-                $SUFIJO = "[WEBPAY - RESPONSE]";
+
 
                 if ($order_id != '') {
                     try {
@@ -482,7 +484,10 @@ function init_woocommerce_webpay() {
                     }
                     //add_action('the_content', array(&$this, 'thankyouContent'));
                 }
+            } else {
+                log_me("FALTAN PARAMETROS", $SUFIJO);
             }
+            log_me("SALIENDO DEL RESPONSE", $SUFIJO);
         }
 
         /**
@@ -652,9 +657,9 @@ function init_woocommerce_webpay() {
             }
             ?>
             <html>
-            <?php
-            if ($acepta == true) {
-                ?>
+                <?php
+                if ($acepta == true) {
+                    ?>
                     ACEPTADO
                 <?php } else { ?>
                     RECHAZADO
