@@ -83,6 +83,8 @@ function init_woocommerce_webpay() {
             $this->liveurl = $this->settings['cgiurl'];
             $this->macpath = $this->settings['macpath'];
 
+            
+            $this->redirect_page_id = $this->settings[''];
              
             // Actions
             add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
