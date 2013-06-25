@@ -3,7 +3,7 @@
   Plugin Name: Woocommerce Webpay ( Chilean Payment Gateway )
   Description: Sistema de pagos de WooCommerce con WebPay
   Author: Cristian Tala Sánchez
-  Version: 1.3
+  Version: 2.0
   Author URI: www.cristiantala.cl
 
   This program is free software: you can redistribute it and/or modify
@@ -119,8 +119,8 @@ function init_woocommerce_webpay() {
                 'macpath' => array(
                     'title' => __('Check Mac Path', 'woocommerce'),
                     'type' => 'text',
-                    'description' => __('url like : /var/www/webpayconector/cgi-bin', 'woocommerce'),
-                    'default' => __('/var/www/webpayconector/cgi-bin', 'woocommerce')
+                    'description' => __('url like : /usr/lib/cgi-bin/', 'woocommerce'),
+                    'default' => __('/usr/lib/cgi-bin/', 'woocommerce')
                 ),
                 
             );
