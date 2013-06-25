@@ -76,11 +76,11 @@ function init_woocommerce_webpay() {
             $this->icon = WP_PLUGIN_URL . "/" . plugin_basename(dirname(__FILE__)) . '/images/logo.png';
             $this->method_title = __('WebPay GateWay', 'woocommerce');
 
-            // Load the settings.
+// Load the settings.
             $this->init_form_fields();
             $this->init_settings();
 
-            // Define user set variables
+// Define user set variables
             $this->title = $this->get_option('title');
             $this->description = $this->get_option('description');
             $this->liveurl = $this->settings['cgiurl'];
@@ -89,12 +89,12 @@ function init_woocommerce_webpay() {
 
             $this->redirect_page_id = $this->settings['redirect_page_id'];
 
-            // Actions
+// Actions
             add_action('woocommerce_update_options_payment_gateways_' . $this->id, array(&$this, 'process_admin_options'));
             add_action('woocommerce_thankyou_webpay', array(&$this, 'thankyou_page'));
             add_action('woocommerce_receipt_webpay', array(&$this, 'receipt_page'));
-            // Customer Emails
-            // add_action('woocommerce_email_before_order_table', array($this, 'email_instructions'), 10, 2);
+// Customer Emails
+// add_action('woocommerce_email_before_order_table', array($this, 'email_instructions'), 10, 2);
         }
 
         /**
@@ -182,9 +182,50 @@ function init_woocommerce_webpay() {
             if (isset($_REQUEST['status'])):
 
                 if ($_REQUEST['status'] == "failure"):
-                    include WP_PLUGIN_URL . "/" . plugin_basename(dirname(__FILE__)) . './php/webpayError.php';
+                    echo '<h2>' . __('Un error ha ocurrido', 'webpay') . '</h2>';
+
+                    $TBK_ID_SESION
+                            = $_POST["TBK_ID_SESION"];
+                    $TBK_ORDEN_COMPRA
+                            = $_POST["TBK_ORDEN_COMPRA"];
+                    ?>
+
+                    <CENTER>
+                        <B>TRANSACCIÓN FRACASADA !!!</B>
+                        <TABLE>
+                            <TR><TH>FRACASO</TH></TR>
+                            <TR><TD>
+                                    TBK_ID_SESION=<?PHP ECHO $TBK_ID_SESION; ?><BR>
+                                    TBK_ORDEN_COMPRA=<?PHP ECHO $TBK_ORDEN_COMPRA; ?><BR>
+                                </TD></TR>
+                        </TABLE>
+                    </CENTER>
+
+                    <?
                 else:
-                    include WP_PLUGIN_URL . "/" . plugin_basename(dirname(__FILE__)) . 'php/thankYouPage.php';
+                    if ($description = $this->get_description())
+                        echo wpautop(wptexturize(wp_kses_post($description)));
+
+                    echo '<h2>' . __('Our Details', 'woocommerce') . '</h2>';
+
+                    echo '<ul class="order_details bacs_details">';
+
+                    $fields = apply_filters('woocommerce_bacs_fields', array(
+                        'account_name' => __('Account Name', 'woocommerce'),
+                        'account_number' => __('Account Number', 'woocommerce'),
+                        'sort_code' => __('Sort Code', 'woocommerce'),
+                        'bank_name' => __('Bank Name', 'woocommerce'),
+                        'iban' => __('IBAN', 'woocommerce'),
+                        'bic' => __('BIC', 'woocommerce')
+                    ));
+
+                    foreach ($fields as $key => $value) {
+                        if (!empty($this->$key)) {
+                            echo '<li class="' . esc_attr($key) . '">' . esc_attr($value) . ': <strong>' . wptexturize($this->$key) . '</strong></li>';
+                        }
+                    }
+
+                    echo '</ul>';
                 endif;
             endif;
         }
@@ -194,15 +235,15 @@ function init_woocommerce_webpay() {
             echo $this->generate_webpay_form($order);
         }
 
-//        function thankyou_page() {
-//            if ($description = $this->get_description())
-//                echo wpautop(wptexturize($description));
-//        }
-//
-//        function receipt_page($order) {
-//            echo '<p>' . __('Gracias por tu pedido, por favor haz click a continuación para pagar con webpay', 'woocommerce') . '</p>';
-//            echo $this->generate_webpay_form($order);
-//        }
+        //        function thankyou_page() {
+        //            if ($description = $this->get_description())
+        //                echo wpautop(wptexturize($description));
+        //        }
+        //
+    //        function receipt_page($order) {
+        //            echo '<p>' . __('Gracias por tu pedido, por favor haz click a continuación para pagar con webpay', 'woocommerce') . '</p>';
+        //            echo $this->generate_webpay_form($order);
+        //        }
 
         function process_payment($order_id) {
             $order = &new WC_Order($order_id);
@@ -265,33 +306,33 @@ function init_woocommerce_webpay() {
             }
 
             return '<form action="' . $this->liveurl . '" method="post" id="webpayplus">
-                ' . implode('', $woopayment) . '
-                <input type="submit" class="button" id="submit_webpayplus_payment_form" value="Pagar" /> <a class="button cancel" href="' . $order->get_cancel_order_url() . '">Cancel</a>
-                <script type="text/javascript">
-jQuery(function(){
-    jQuery("body").block(
-            {
-                message: "<img src=\"' . $woocommerce->plugin_url() . '/assets/images/ajax-loader.gif\" alt=\"Redirecting�\" style=\"float:left; margin-right: 10px;\" />' . __('Thank you for your order. We are now redirecting you to Webpay to make payment.', 'mrova') . '",
-                    overlayCSS:
-            {
-                background: "#fff",
-                    opacity: 0.6
-        },
-        css: {
-            padding:        20,
-                textAlign:      "center",
-                color:          "#555",
-                border:         "3px solid #aaa",
-                backgroundColor:"#fff",
-                cursor:         "wait",
-                lineHeight:"32px"
-        }
-        });
-        jQuery("#submit_webpayplus_payment_form").click();
+        ' . implode('', $woopayment) . '
+        <input type="submit" class="button" id="submit_webpayplus_payment_form" value="Pagar" /> <a class="button cancel" href="' . $order->get_cancel_order_url() . '">Cancel</a>
+        <script type="text/javascript">
+            jQuery(function() {
+                jQuery("body").block(
+                        {
+                            message: "<img src=\"' . $woocommerce->plugin_url() . '/assets/images/ajax-loader.gif\" alt=\"Redirecting�\" style=\"float:left; margin-right: 10px;\" />' . __('Thank you for your order. We are now redirecting you to Webpay to make payment.', 'mrova') . '",
+                            overlayCSS:
+                                    {
+                                        background: "#fff",
+                                        opacity: 0.6
+                                    },
+                            css: {
+                                padding: 20,
+                                textAlign: "center",
+                                color: "#555",
+                                border: "3px solid #aaa",
+                                backgroundColor: "#fff",
+                                cursor: "wait",
+                                lineHeight: "32px"
+                            }
+                        });
+                jQuery("#submit_webpayplus_payment_form").click();
 
-        });
-                    </script>
-                </form>';
+            });
+        </script>
+    </form>';
         }
 
         // get all pages
@@ -351,10 +392,10 @@ jQuery(function(){
 
                                 // Empty awaiting payment session
                                 unset($_SESSION['order_awaiting_payment']);
-//
-//                                log_me('START WEBPAY RESPONSE ARRAY REQUEST');
-//                                log_me($_REQUEST);
-//                                log_me('END WEBPAY RESPONSE ARRAY REQUEST');
+                                //
+                                //                                log_me('START WEBPAY RESPONSE ARRAY REQUEST');
+                                //                                log_me($_REQUEST);
+                                //                                log_me('END WEBPAY RESPONSE ARRAY REQUEST');
                                 //RESCATO EL ARCHIVO
                                 $TBK_ID_SESION
                                         = $_POST["TBK_ID_SESION"];
@@ -388,10 +429,10 @@ jQuery(function(){
                                         //'TBK_MAC' => explode("=", $detalle[13]),
                                 );
 
-//                                log_me("INICIO INFO PARA AGREGAR A LA DB EN CHECK RESPONSE");
-//                                log_me($TBK);  
-//                                log_me("FIN INFO PARA AGREGAR A LA DB EN CHECK RESPONSE");
-//                                
+                                //                                log_me("INICIO INFO PARA AGREGAR A LA DB EN CHECK RESPONSE");
+                                //                                log_me($TBK);  
+                                //                                log_me("FIN INFO PARA AGREGAR A LA DB EN CHECK RESPONSE");
+                                //                                
                                 log_me("INSERTANDO EN LA BDD");
                                 woocommerce_payment_complete_add_data_webpay($order_id, $TBK);
                                 log_me("TERMINANDO INSERSIÓN");
@@ -422,26 +463,26 @@ jQuery(function(){
          * @param int $order_id
          * @return array
          */
-//            function process_payment($order_id) {
-//                global $woocommerce;
-//
-//                $order = new WC_Order($order_id);
-//
-//                // Mark as on-hold (we're awaiting the payment)
-//                $order->update_status('on-hold', __('Awaiting BACS payment', 'woocommerce'));
-//
-//                // Reduce stock levels
-//                $order->reduce_order_stock();
-//
-//                // Remove cart
-//                $woocommerce->cart->empty_cart();
-//
-//                // Return thankyou redirect
-//                return array(
-//                    'result' => 'success',
-//                    'redirect' => add_query_arg('key', $order->order_key, add_query_arg('order', $order->id, get_permalink(woocommerce_get_page_id('thanks'))))
-//                );
-//            }
+        //            function process_payment($order_id) {
+        //                global $woocommerce;
+        //
+    //                $order = new WC_Order($order_id);
+        //
+    //                // Mark as on-hold (we're awaiting the payment)
+        //                $order->update_status('on-hold', __('Awaiting BACS payment', 'woocommerce'));
+        //
+    //                // Reduce stock levels
+        //                $order->reduce_order_stock();
+        //
+    //                // Remove cart
+        //                $woocommerce->cart->empty_cart();
+        //
+    //                // Return thankyou redirect
+        //                return array(
+        //                    'result' => 'success',
+        //                    'redirect' => add_query_arg('key', $order->order_key, add_query_arg('order', $order->id, get_permalink(woocommerce_get_page_id('thanks'))))
+        //                );
+        //            }
 
 
         function thankyouContent($content) {
