@@ -177,6 +177,10 @@ function init_woocommerce_webpay() {
          * @return void
          */
         function thankyou_page() {
+            
+            if(isset($_REQUEST['status'])):
+                echo "<h1>Status : </h1>".$_REQUEST['status'];
+            endif;
             if ($description = $this->get_description())
                 echo wpautop(wptexturize(wp_kses_post($description)));
 
