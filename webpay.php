@@ -68,7 +68,7 @@ function init_woocommerce_webpay() {
             $this->liveurl = $this->settings['cgiurl'];
             $this->macpath = $this->settings['macpath'];
             
-            $this->redirect_page_id = $this->settings['redirect_page_id'];
+            //$this->redirect_page_id = $this->settings['redirect_page_id'];
 
             // Actions
             add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
@@ -115,12 +115,6 @@ function init_woocommerce_webpay() {
                     'title' => __('Customer Message', 'woocommerce'),
                     'type' => 'textarea',
                     'default' => __('Sistema de Pagos a través de tarjetas de crédito y redcompra usando WebPayPlus.', 'woocommerce')
-                ),
-                'redirect_page_id' => array(
-                    'title' => __('Return Page'),
-                    'type' => 'select',
-                    'options' => $this->get_pages('Select Page'),
-                    'description' => "URL of success page"
                 ),
                 'idcomercio' => array(
                     'title' => __('IDCOMERCIO', 'woocommerce'),
