@@ -267,6 +267,8 @@ function init_woocommerce_webpay() {
 
         public function generate_webpay_form($order_id) {
             global $woocommerce;
+            $SUFIJO = "[WEBPAY - FORM]";
+
             $order = &new WC_Order($order_id);
             $redirect_url = ($this->redirect_page_id == "" || $this->redirect_page_id == 0) ? get_site_url() . "/" : get_permalink($this->redirect_page_id);
             $order_id = $order_id;
@@ -292,15 +294,17 @@ function init_woocommerce_webpay() {
 //                    chmod(dirname($filename), 0777);
 //                }
 //            endif;
-
-
-            //Archivos de datos para uso de pagina de cierre                    
+            //Archivos de datos para uso de pagina de cierre
+            
+            log_me("Entrando a la verificación de carpetas",$SUFIJO);
             if (!is_dir(dirname($filename) . "/comun")) {
                 mkdir(dirname($filename) . "/comun", 0777);
                 chmod(dirname($filename) . "/comun", 0777);
             }
 
             $myPath = dirname(__FILE__) . "/comun/dato$TBK_ID_SESION.log";
+            
+            log_me("Se utilizará $myPath para guardar los datos",$SUFIJO);
             /*             * **************** FIN CONFIGURACION **************** */
             //formato Moneda
             $partesMonto = split(",", $TBK_MONTO);
@@ -308,8 +312,11 @@ function init_woocommerce_webpay() {
             //Grabado de datos en archivo de transaccion
             $fic = fopen($myPath, "w+");
             $linea = "$TBK_MONTO;$TBK_ORDEN_COMPRA";
+            
+            log_me("Preparando para escribir $linea en $myPath",$SUFIJO);
             fwrite($fic, $linea);
             fclose($fic);
+            log_me("ARCHIVO CERRADO",$SUFIJO);
 
 
             $ccavenue_args = array(
@@ -390,6 +397,7 @@ function init_woocommerce_webpay() {
                 $order_id_time = $_REQUEST['order'];
                 $order_id = explode('_', $_REQUEST['order']);
                 $order_id = (int) $order_id[0];
+                $SUFIJO = "[WEBPAY - RESPONSE]";
 
                 if ($order_id != '') {
                     try {
@@ -413,10 +421,10 @@ function init_woocommerce_webpay() {
 
                                 // Empty awaiting payment session
                                 unset($_SESSION['order_awaiting_payment']);
-                                //
-                                //                                log_me('START WEBPAY RESPONSE ARRAY REQUEST');
-                                //                                log_me($_REQUEST);
-                                //                                log_me('END WEBPAY RESPONSE ARRAY REQUEST');
+
+                                log_me('START WEBPAY RESPONSE ARRAY REQUEST', $SUFIJO);
+                                log_me($_REQUEST);
+                                log_me('END WEBPAY RESPONSE ARRAY REQUEST', $SUFIJO);
                                 //RESCATO EL ARCHIVO
                                 $TBK_ID_SESION
                                         = $_POST["TBK_ID_SESION"];
@@ -644,9 +652,9 @@ function init_woocommerce_webpay() {
             }
             ?>
             <html>
-                <?php
-                if ($acepta == true) {
-                    ?>
+            <?php
+            if ($acepta == true) {
+                ?>
                     ACEPTADO
                 <?php } else { ?>
                     RECHAZADO
