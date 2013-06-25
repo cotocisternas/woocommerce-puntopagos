@@ -43,13 +43,13 @@ function init_woocommerce_webpay() {
          */
         public function __construct() {
 
-            
-                if ($_REQUEST['page_id'] == 'xt_compra') {
-                    add_action('init', array(&$this, 'xt_compra'));
-                } else {
-                    add_action('init', array(&$this, 'check_webpay_response'));
-                }
-            
+
+            if ($_REQUEST['page_id'] == 'xt_compra') {
+                add_action('init', array(&$this, 'xt_compra'));
+            } else {
+                add_action('init', array(&$this, 'check_webpay_response'));
+            }
+
 
 
             $this->id = 'webpay';
@@ -102,7 +102,7 @@ function init_woocommerce_webpay() {
                     'title' => __('Customer Message', 'woocommerce'),
                     'type' => 'textarea',
                     'description' => __('Give the customer instructions for paying via BACS, and let them know that their order won\'t be shipping until the money is received.', 'woocommerce'),
-                    //'default' => __('Make your payment directly into our bank account. Please use your Order ID as the payment reference. Your order wont be shipped until the funds have cleared in our account.', 'woocommerce')
+                //'default' => __('Make your payment directly into our bank account. Please use your Order ID as the payment reference. Your order wont be shipped until the funds have cleared in our account.', 'woocommerce')
                 ),
                 'account_details' => array(
                     'title' => __('Detalles de WebPay', 'woocommerce'),
@@ -122,7 +122,12 @@ function init_woocommerce_webpay() {
                     'description' => __('url like : /usr/lib/cgi-bin/', 'woocommerce'),
                     'default' => __('/usr/lib/cgi-bin/', 'woocommerce')
                 ),
-                
+                'redirect_page_id' => array(
+                    'title' => __('Return Page'),
+                    'type' => 'select',
+                    'options' => $this->get_pages('Select Page'),
+                    'description' => "URL of success page"
+                ),
             );
         }
 
@@ -176,6 +181,8 @@ function init_woocommerce_webpay() {
             }
 
             echo '</ul>';
+            
+            
         }
 
         /**
@@ -200,83 +207,83 @@ function init_woocommerce_webpay() {
             if ($description = $this->get_description())
                 echo wpautop(wptexturize($description));
             ?><h2><?php _e('Our Details', 'woocommerce') ?></h2><ul class="order_details bacs_details"><?php
-                $fields = apply_filters('woocommerce_bacs_fields', array(
-                    'account_name' => __('Account Name', 'woocommerce'),
-                    'account_number' => __('Account Number', 'woocommerce'),
-                    'sort_code' => __('Sort Code', 'woocommerce'),
-                    'bank_name' => __('Bank Name', 'woocommerce'),
-                    'iban' => __('IBAN', 'woocommerce'),
-                    'bic' => __('BIC', 'woocommerce')
-                ));
+            $fields = apply_filters('woocommerce_bacs_fields', array(
+                'account_name' => __('Account Name', 'woocommerce'),
+                'account_number' => __('Account Number', 'woocommerce'),
+                'sort_code' => __('Sort Code', 'woocommerce'),
+                'bank_name' => __('Bank Name', 'woocommerce'),
+                'iban' => __('IBAN', 'woocommerce'),
+                'bic' => __('BIC', 'woocommerce')
+            ));
 
-                foreach ($fields as $key => $value) :
-                    if (!empty($this->$key)) :
-                        echo '<li class="' . $key . '">' . $value . ': <strong>' . wptexturize($this->$key) . '</strong></li>';
-                    endif;
-                endforeach;
-                ?></ul><?php
-        }
-
-        function receipt_page($order) {
-            echo '<p>' . __('Gracias por tu pedido, por favor haz click a continuación para pagar con webpay', 'woocommerce') . '</p>';
-            echo $this->generate_webpay_form($order);
-        }
-
-        public function generate_webpay_form($order_id) {
-            global $woocommerce;
-            $order = &new WC_Order($order_id);
-            $redirect_url = ($this->redirect_page_id == "" || $this->redirect_page_id == 0) ? get_site_url() . "/" : get_permalink($this->redirect_page_id);
-            $order_id = $order_id;
-            $order_key = $order->order_key;
-
-            $permalinkStructure = get_option('permalink_structure');
-
-            if (!empty($permalinkStructure))
-                $queryStr = '?';
-            else
-                $queryStr = '&';
-
-
-            $TBK_MONTO = round($order->order_total);
-            $TBK_ORDEN_COMPRA = $order_id;
-            $TBK_ID_SESION = date("Ymdhis");
-
-            mkdir(dirname(__FILE__), 0777);
-            chmod(dirname(__FILE__), 0777);
-
-            //Archivos de datos para uso de pagina de cierre                    
-            if (!is_dir(dirname(__FILE__) . "/comun")) {
-                mkdir(dirname(__FILE__) . "/comun", 0777);
-                chmod(dirname(__FILE__) . "/comun", 0777);
+            foreach ($fields as $key => $value) :
+                if (!empty($this->$key)) :
+                    echo '<li class="' . $key . '">' . $value . ': <strong>' . wptexturize($this->$key) . '</strong></li>';
+                endif;
+            endforeach;
+            ?></ul><?php
             }
 
-            $myPath = dirname(__FILE__) . "/comun/dato$TBK_ID_SESION.log";
-            /*             * **************** FIN CONFIGURACION **************** */
-            //formato Moneda
-            $partesMonto = split(",", $TBK_MONTO);
-            $TBK_MONTO = $partesMonto[0] . "00";
-            //Grabado de datos en archivo de transaccion
-            $fic = fopen($myPath, "w+");
-            $linea = "$TBK_MONTO;$TBK_ORDEN_COMPRA";
-            fwrite($fic, $linea);
-            fclose($fic);
-
-
-            $ccavenue_args = array(
-                'TBK_TIPO_TRANSACCION' => "TR_NORMAL",
-                'TBK_MONTO' => $TBK_MONTO,
-                'TBK_ORDEN_COMPRA' => $TBK_ORDEN_COMPRA,
-                'TBK_ID_SESION' => $TBK_ID_SESION,
-                'TBK_URL_EXITO' => $redirect_url . $queryStr . "status=success&order=$order_id&key=$order_key",
-                'TBK_URL_FRACASO' => $redirect_url . $queryStr . "status=failure&order=$order_id&key=$order_key",
-            );
-
-            $woopayment = array();
-            foreach ($ccavenue_args as $key => $value) {
-                $woopayment[] = "<input type='hidden' name='$key' value='$value'/>";
+            function receipt_page($order) {
+                echo '<p>' . __('Gracias por tu pedido, por favor haz click a continuación para pagar con webpay', 'woocommerce') . '</p>';
+                echo $this->generate_webpay_form($order);
             }
 
-            return '<form action="' . $this->liveurl . '" method="post" id="webpayplus">
+            public function generate_webpay_form($order_id) {
+                global $woocommerce;
+                $order = &new WC_Order($order_id);
+                $redirect_url = ($this->redirect_page_id == "" || $this->redirect_page_id == 0) ? get_site_url() . "/" : get_permalink($this->redirect_page_id);
+                $order_id = $order_id;
+                $order_key = $order->order_key;
+
+                $permalinkStructure = get_option('permalink_structure');
+
+                if (!empty($permalinkStructure))
+                    $queryStr = '?';
+                else
+                    $queryStr = '&';
+
+
+                $TBK_MONTO = round($order->order_total);
+                $TBK_ORDEN_COMPRA = $order_id;
+                $TBK_ID_SESION = date("Ymdhis");
+
+                mkdir(dirname(__FILE__), 0777);
+                chmod(dirname(__FILE__), 0777);
+
+                //Archivos de datos para uso de pagina de cierre                    
+                if (!is_dir(dirname(__FILE__) . "/comun")) {
+                    mkdir(dirname(__FILE__) . "/comun", 0777);
+                    chmod(dirname(__FILE__) . "/comun", 0777);
+                }
+
+                $myPath = dirname(__FILE__) . "/comun/dato$TBK_ID_SESION.log";
+                /*                 * **************** FIN CONFIGURACION **************** */
+                //formato Moneda
+                $partesMonto = split(",", $TBK_MONTO);
+                $TBK_MONTO = $partesMonto[0] . "00";
+                //Grabado de datos en archivo de transaccion
+                $fic = fopen($myPath, "w+");
+                $linea = "$TBK_MONTO;$TBK_ORDEN_COMPRA";
+                fwrite($fic, $linea);
+                fclose($fic);
+
+
+                $ccavenue_args = array(
+                    'TBK_TIPO_TRANSACCION' => "TR_NORMAL",
+                    'TBK_MONTO' => $TBK_MONTO,
+                    'TBK_ORDEN_COMPRA' => $TBK_ORDEN_COMPRA,
+                    'TBK_ID_SESION' => $TBK_ID_SESION,
+                    'TBK_URL_EXITO' => $redirect_url . $queryStr . "status=success&order=$order_id&key=$order_key",
+                    'TBK_URL_FRACASO' => $redirect_url . $queryStr . "status=failure&order=$order_id&key=$order_key",
+                );
+
+                $woopayment = array();
+                foreach ($ccavenue_args as $key => $value) {
+                    $woopayment[] = "<input type='hidden' name='$key' value='$value'/>";
+                }
+
+                return '<form action="' . $this->liveurl . '" method="post" id="webpayplus">
                 ' . implode('', $woopayment) . '
                 <input type="submit" class="button" id="submit_webpayplus_payment_form" value="Pagar" /> <a class="button cancel" href="' . $order->get_cancel_order_url() . '">Cancel</a>
                 <script type="text/javascript">
@@ -304,290 +311,290 @@ jQuery(function(){
         });
                     </script>
                 </form>';
-        }
-
-        // get all pages
-        function get_pages($title = false, $indent = true) {
-            $wp_pages = get_pages('sort_column=menu_order');
-            $page_list = array();
-            if ($title)
-                $page_list[] = $title;
-            foreach ($wp_pages as $page) {
-                $prefix = '';
-                // show indented child pages?
-                if ($indent) {
-                    $has_parent = $page->post_parent;
-                    while ($has_parent) {
-                        $prefix .= ' - ';
-                        $next_page = get_page($has_parent);
-                        $has_parent = $next_page->post_parent;
-                    }
-                }
-                // add to page list array array
-                $page_list[$page->ID] = $prefix . $page->post_title;
             }
-            return $page_list;
-        }
 
-        /**
-         *      Check payment response from web pay plus
-         * */
-        function check_webpay_response() {
-            global $woocommerce;
+            // get all pages
+            function get_pages($title = false, $indent = true) {
+                $wp_pages = get_pages('sort_column=menu_order');
+                $page_list = array();
+                if ($title)
+                    $page_list[] = $title;
+                foreach ($wp_pages as $page) {
+                    $prefix = '';
+                    // show indented child pages?
+                    if ($indent) {
+                        $has_parent = $page->post_parent;
+                        while ($has_parent) {
+                            $prefix .= ' - ';
+                            $next_page = get_page($has_parent);
+                            $has_parent = $next_page->post_parent;
+                        }
+                    }
+                    // add to page list array array
+                    $page_list[$page->ID] = $prefix . $page->post_title;
+                }
+                return $page_list;
+            }
+
+            /**
+             *      Check payment response from web pay plus
+             * */
+            function check_webpay_response() {
+                global $woocommerce;
 
 
-            if ($_REQUEST['TBK_ORDEN_COMPRA'] and $_REQUEST['TBK_ID_SESION']) {
-                $order_id_time = $_REQUEST['order'];
-                $order_id = explode('_', $_REQUEST['order']);
-                $order_id = (int) $order_id[0];
+                if ($_REQUEST['TBK_ORDEN_COMPRA'] and $_REQUEST['TBK_ID_SESION']) {
+                    $order_id_time = $_REQUEST['order'];
+                    $order_id = explode('_', $_REQUEST['order']);
+                    $order_id = (int) $order_id[0];
 
-                if ($order_id != '') {
-                    try {
-                        $order = new WC_Order($order_id);
+                    if ($order_id != '') {
+                        try {
+                            $order = new WC_Order($order_id);
 
-                        $status = $_REQUEST['status'];
-                        if ($order->status !== 'completed') {
-                            if ($status == 'success') {
-                                /* $order -> payment_complete();
-                                  $woocommerce -> cart -> empty_cart();
-                                  $order -> update_status('completed'); */
+                            $status = $_REQUEST['status'];
+                            if ($order->status !== 'completed') {
+                                if ($status == 'success') {
+                                    /* $order -> payment_complete();
+                                      $woocommerce -> cart -> empty_cart();
+                                      $order -> update_status('completed'); */
 
-                                // Mark as on-hold (we're awaiting the cheque)
-                                $order->update_status('on-hold');
+                                    // Mark as on-hold (we're awaiting the cheque)
+                                    $order->update_status('on-hold');
 
-                                // Reduce stock levels
-                                $order->reduce_order_stock();
+                                    // Reduce stock levels
+                                    $order->reduce_order_stock();
 
-                                // Remove cart
-                                $woocommerce->cart->empty_cart();
+                                    // Remove cart
+                                    $woocommerce->cart->empty_cart();
 
-                                // Empty awaiting payment session
-                                unset($_SESSION['order_awaiting_payment']);
+                                    // Empty awaiting payment session
+                                    unset($_SESSION['order_awaiting_payment']);
 //
 //                                log_me('START WEBPAY RESPONSE ARRAY REQUEST');
 //                                log_me($_REQUEST);
 //                                log_me('END WEBPAY RESPONSE ARRAY REQUEST');
-                                //RESCATO EL ARCHIVO
-                                $TBK_ID_SESION
-                                        = $_POST["TBK_ID_SESION"];
-                                $TBK_ORDEN_COMPRA
-                                        = $_POST["TBK_ORDEN_COMPRA"];
-                                /*                                 * **************** CONFIGURAR AQUI ****************** */
+                                    //RESCATO EL ARCHIVO
+                                    $TBK_ID_SESION
+                                            = $_POST["TBK_ID_SESION"];
+                                    $TBK_ORDEN_COMPRA
+                                            = $_POST["TBK_ORDEN_COMPRA"];
+                                    /*                                     * **************** CONFIGURAR AQUI ****************** */
 
 
-                                //Archivo previamente generado para rescatar la información.
-                                $myPath = dirname(__FILE__) . "/comun/MAC01Normal$TBK_ID_SESION.txt";
-                                /*                                 * **************** FIN CONFIGURACION **************** */
-                                //Rescate de los valores informados por transbank
-                                $fic = fopen($myPath, "r");
-                                $linea = fgets($fic);
-                                fclose($fic);
-                                $detalle = explode("&", $linea);
+                                    //Archivo previamente generado para rescatar la información.
+                                    $myPath = dirname(__FILE__) . "/comun/MAC01Normal$TBK_ID_SESION.txt";
+                                    /*                                     * **************** FIN CONFIGURACION **************** */
+                                    //Rescate de los valores informados por transbank
+                                    $fic = fopen($myPath, "r");
+                                    $linea = fgets($fic);
+                                    fclose($fic);
+                                    $detalle = explode("&", $linea);
 
-                                $TBK = array(
-                                    'TBK_ORDEN_COMPRA' => explode("=", $detalle[0]),
-                                    'TBK_TIPO_TRANSACCION' => explode("=", $detalle[1]),
-                                    'TBK_RESPUESTA' => explode("=", $detalle[2]),
-                                    'TBK_MONTO' => explode("=", $detalle[3]),
-                                    'TBK_CODIGO_AUTORIZACION' => explode("=", $detalle[4]),
-                                    'TBK_FINAL_NUMERO_TARJETA' => explode("=", $detalle[5]),
-                                    'TBK_FECHA_CONTABLE' => explode("=", $detalle[6]),
-                                    'TBK_FECHA_TRANSACCION' => explode("=", $detalle[7]),
-                                    'TBK_HORA_TRANSACCION' => explode("=", $detalle[8]),
-                                    'TBK_ID_TRANSACCION' => explode("=", $detalle[10]),
-                                    'TBK_TIPO_PAGO' => explode("=", $detalle[11]),
-                                    'TBK_NUMERO_CUOTAS' => explode("=", $detalle[12]),
-                                        //'TBK_MAC' => explode("=", $detalle[13]),
-                                );
+                                    $TBK = array(
+                                        'TBK_ORDEN_COMPRA' => explode("=", $detalle[0]),
+                                        'TBK_TIPO_TRANSACCION' => explode("=", $detalle[1]),
+                                        'TBK_RESPUESTA' => explode("=", $detalle[2]),
+                                        'TBK_MONTO' => explode("=", $detalle[3]),
+                                        'TBK_CODIGO_AUTORIZACION' => explode("=", $detalle[4]),
+                                        'TBK_FINAL_NUMERO_TARJETA' => explode("=", $detalle[5]),
+                                        'TBK_FECHA_CONTABLE' => explode("=", $detalle[6]),
+                                        'TBK_FECHA_TRANSACCION' => explode("=", $detalle[7]),
+                                        'TBK_HORA_TRANSACCION' => explode("=", $detalle[8]),
+                                        'TBK_ID_TRANSACCION' => explode("=", $detalle[10]),
+                                        'TBK_TIPO_PAGO' => explode("=", $detalle[11]),
+                                        'TBK_NUMERO_CUOTAS' => explode("=", $detalle[12]),
+                                            //'TBK_MAC' => explode("=", $detalle[13]),
+                                    );
 
 //                                log_me("INICIO INFO PARA AGREGAR A LA DB EN CHECK RESPONSE");
 //                                log_me($TBK);  
 //                                log_me("FIN INFO PARA AGREGAR A LA DB EN CHECK RESPONSE");
 //                                
-                                log_me("INSERTANDO EN LA BDD");
-                                woocommerce_payment_complete_add_data_webpay($order_id, $TBK);
-                                log_me("TERMINANDO INSERSIÓN");
-                            } elseif ($status == 'failure') {
-                                $order->update_status('failed');
-                                $order->add_order_note('Failed');
+                                    log_me("INSERTANDO EN LA BDD");
+                                    woocommerce_payment_complete_add_data_webpay($order_id, $TBK);
+                                    log_me("TERMINANDO INSERSIÓN");
+                                } elseif ($status == 'failure') {
+                                    $order->update_status('failed');
+                                    $order->add_order_note('Failed');
 
-                                //Si falla no limpio el carrito para poder pagar nuevamente
-                                //$woocommerce->cart->empty_cart();
+                                    //Si falla no limpio el carrito para poder pagar nuevamente
+                                    //$woocommerce->cart->empty_cart();
+                                }
+                            } else {
+                                $this->msg = 'order already completed.';
+                                add_action('the_content', array(&$this, 'thankyouContent'));
                             }
-                        } else {
-                            $this->msg = 'order already completed.';
-                            add_action('the_content', array(&$this, 'thankyouContent'));
+                        } catch (Exception $e) {
+                            // $errorOccurred = true;
+                            $this->msg = "Error occured while processing your request";
                         }
-                    } catch (Exception $e) {
-                        // $errorOccurred = true;
-                        $this->msg = "Error occured while processing your request";
+                        //add_action('the_content', array(&$this, 'thankyouContent'));
                     }
-                    //add_action('the_content', array(&$this, 'thankyouContent'));
                 }
             }
-        }
 
-        /**
-         * Process the payment and return the result
-         *
-         * @access public
-         * @param int $order_id
-         * @return array
-         */
-        function process_payment($order_id) {
-            global $woocommerce;
+            /**
+             * Process the payment and return the result
+             *
+             * @access public
+             * @param int $order_id
+             * @return array
+             */
+//            function process_payment($order_id) {
+//                global $woocommerce;
+//
+//                $order = new WC_Order($order_id);
+//
+//                // Mark as on-hold (we're awaiting the payment)
+//                $order->update_status('on-hold', __('Awaiting BACS payment', 'woocommerce'));
+//
+//                // Reduce stock levels
+//                $order->reduce_order_stock();
+//
+//                // Remove cart
+//                $woocommerce->cart->empty_cart();
+//
+//                // Return thankyou redirect
+//                return array(
+//                    'result' => 'success',
+//                    'redirect' => add_query_arg('key', $order->order_key, add_query_arg('order', $order->id, get_permalink(woocommerce_get_page_id('thanks'))))
+//                );
+//            }
 
-            $order = new WC_Order($order_id);
+            public function xt_compra() {
+                global $webpay_table_name;
+                global $wpdb;
+                global $woocommerce;
+                $sufijo = "[XT_COMPRA]";
 
-            // Mark as on-hold (we're awaiting the payment)
-            $order->update_status('on-hold', __('Awaiting BACS payment', 'woocommerce'));
-
-            // Reduce stock levels
-            $order->reduce_order_stock();
-
-            // Remove cart
-            $woocommerce->cart->empty_cart();
-
-            // Return thankyou redirect
-            return array(
-                'result' => 'success',
-                'redirect' => add_query_arg('key', $order->order_key, add_query_arg('order', $order->id, get_permalink(woocommerce_get_page_id('thanks'))))
-            );
-        }
-
-        public function xt_compra() {
-            global $webpay_table_name;
-            global $wpdb;
-            global $woocommerce;
-            $sufijo = "[XT_COMPRA]";
-
-            //rescate de datos de POST.
-            $TBK_RESPUESTA = $_POST["TBK_RESPUESTA"];
-            $TBK_ORDEN_COMPRA = $_POST["TBK_ORDEN_COMPRA"];
-            $TBK_MONTO = $_POST["TBK_MONTO"];
-            $TBK_ID_SESION = $_POST["TBK_ID_SESION"];
-            $TBK_TIPO_TRANSACCION = $_POST['TBK_TIPO_TRANSACCION'];
-            $TBK_CODIGO_AUTORIZACION = $_POST['TBK_CODIGO_AUTORIZACION'];
-            $TBK_FINAL_NUMERO_TARJETA = $_POST['TBK_FINAL_NUMERO_TARJETA'];
-            $TBK_FECHA_CONTABLE = $_POST['TBK_FECHA_CONTABLE'];
-            $TBK_FECHA_TRANSACCION = $_POST['TBK_FECHA_TRANSACCION'];
-            $TBK_HORA_TRANSACCION = $_POST['TBK_HORA_TRANSACCION'];
-            $TBK_ID_TRANSACCION = $_POST['TBK_ID_TRANSACCION'];
-            $TBK_TIPO_PAGO = $_POST['TBK_TIPO_PAGO'];
-            $TBK_NUMERO_CUOTAS = $_POST['TBK_NUMERO_CUOTAS'];
+                //rescate de datos de POST.
+                $TBK_RESPUESTA = $_POST["TBK_RESPUESTA"];
+                $TBK_ORDEN_COMPRA = $_POST["TBK_ORDEN_COMPRA"];
+                $TBK_MONTO = $_POST["TBK_MONTO"];
+                $TBK_ID_SESION = $_POST["TBK_ID_SESION"];
+                $TBK_TIPO_TRANSACCION = $_POST['TBK_TIPO_TRANSACCION'];
+                $TBK_CODIGO_AUTORIZACION = $_POST['TBK_CODIGO_AUTORIZACION'];
+                $TBK_FINAL_NUMERO_TARJETA = $_POST['TBK_FINAL_NUMERO_TARJETA'];
+                $TBK_FECHA_CONTABLE = $_POST['TBK_FECHA_CONTABLE'];
+                $TBK_FECHA_TRANSACCION = $_POST['TBK_FECHA_TRANSACCION'];
+                $TBK_HORA_TRANSACCION = $_POST['TBK_HORA_TRANSACCION'];
+                $TBK_ID_TRANSACCION = $_POST['TBK_ID_TRANSACCION'];
+                $TBK_TIPO_PAGO = $_POST['TBK_TIPO_PAGO'];
+                $TBK_NUMERO_CUOTAS = $_POST['TBK_NUMERO_CUOTAS'];
 
 
-            //Validación de los datos del post.
-            if (!isset($TBK_RESPUESTA) || !is_numeric($TBK_RESPUESTA))
-                die('RECHAZADO');
-            if (!isset($TBK_ORDEN_COMPRA))
-                die('RECHAZADO');
-            if (!isset($TBK_MONTO) || !is_numeric($TBK_MONTO))
-                die('RECHAZADO');
-            if (!isset($TBK_ID_SESION) || !is_numeric($TBK_ID_SESION))
-                die('RECHAZADO');
-            if (!isset($TBK_TIPO_TRANSACCION))
-                die('RECHAZADO');
-            if (!isset($TBK_CODIGO_AUTORIZACION) || !is_numeric($TBK_CODIGO_AUTORIZACION))
-                die('RECHAZADO');
-            if (!isset($TBK_FINAL_NUMERO_TARJETA) || !is_numeric($TBK_FINAL_NUMERO_TARJETA))
-                die('RECHAZADO');
-            if (!isset($TBK_FECHA_CONTABLE) || !is_numeric($TBK_FECHA_CONTABLE))
-                die('RECHAZADO');
-            if (!isset($TBK_FECHA_TRANSACCION) || !is_numeric($TBK_FECHA_TRANSACCION))
-                die('RECHAZADO');
-            if (!isset($TBK_HORA_TRANSACCION) || !is_numeric($TBK_HORA_TRANSACCION))
-                die('RECHAZADO');
-            if (!isset($TBK_ID_TRANSACCION) || !is_numeric($TBK_ID_TRANSACCION))
-                die('RECHAZADO');
-            if (!isset($TBK_TIPO_PAGO))
-                die('RECHAZADO');
-            if (!isset($TBK_NUMERO_CUOTAS) || !is_numeric($TBK_NUMERO_CUOTAS))
-                die('RECHAZADO');
+                //Validación de los datos del post.
+                if (!isset($TBK_RESPUESTA) || !is_numeric($TBK_RESPUESTA))
+                    die('RECHAZADO');
+                if (!isset($TBK_ORDEN_COMPRA))
+                    die('RECHAZADO');
+                if (!isset($TBK_MONTO) || !is_numeric($TBK_MONTO))
+                    die('RECHAZADO');
+                if (!isset($TBK_ID_SESION) || !is_numeric($TBK_ID_SESION))
+                    die('RECHAZADO');
+                if (!isset($TBK_TIPO_TRANSACCION))
+                    die('RECHAZADO');
+                if (!isset($TBK_CODIGO_AUTORIZACION) || !is_numeric($TBK_CODIGO_AUTORIZACION))
+                    die('RECHAZADO');
+                if (!isset($TBK_FINAL_NUMERO_TARJETA) || !is_numeric($TBK_FINAL_NUMERO_TARJETA))
+                    die('RECHAZADO');
+                if (!isset($TBK_FECHA_CONTABLE) || !is_numeric($TBK_FECHA_CONTABLE))
+                    die('RECHAZADO');
+                if (!isset($TBK_FECHA_TRANSACCION) || !is_numeric($TBK_FECHA_TRANSACCION))
+                    die('RECHAZADO');
+                if (!isset($TBK_HORA_TRANSACCION) || !is_numeric($TBK_HORA_TRANSACCION))
+                    die('RECHAZADO');
+                if (!isset($TBK_ID_TRANSACCION) || !is_numeric($TBK_ID_TRANSACCION))
+                    die('RECHAZADO');
+                if (!isset($TBK_TIPO_PAGO))
+                    die('RECHAZADO');
+                if (!isset($TBK_NUMERO_CUOTAS) || !is_numeric($TBK_NUMERO_CUOTAS))
+                    die('RECHAZADO');
 
-            $order_id = explode('_', $TBK_ORDEN_COMPRA);
-            $order_id = (int) $order_id[0];
+                $order_id = explode('_', $TBK_ORDEN_COMPRA);
+                $order_id = (int) $order_id[0];
 
-            if (!is_numeric($order_id))
-                die('RECHAZADO');
+                if (!is_numeric($order_id))
+                    die('RECHAZADO');
 
-            if ($TBK_RESPUESTA == -1)
-                die("ACEPTADO");
+                if ($TBK_RESPUESTA == -1)
+                    die("ACEPTADO");
 
-            //Validar que la orden exista         
-            $order = new WC_Order($order_id);
-            log_me($order->status, $sufijo);
+                //Validar que la orden exista         
+                $order = new WC_Order($order_id);
+                log_me($order->status, $sufijo);
 
-            //Si la orden de compra no tiene status es debido a que no existe
+                //Si la orden de compra no tiene status es debido a que no existe
 
-            if ($order->status == '') {
-                log_me("ORDEN NO EXISTENTE " . $order_id, $sufijo);
-                die('RECHAZADO');
-            } else {
-                log_me("ORDEN EXISTENTE " . $order_id, $sufijo);
-                //CUANDO UNA ORDEN ES PAGADA SE VA A ON HOLD.
-
-                if ($order->status == 'completed') {
-                    log_me("ORDEN YA PAGADA (COMPLETED) EXISTENTE " . $order_id, "\t" . $sufijo);
+                if ($order->status == '') {
+                    log_me("ORDEN NO EXISTENTE " . $order_id, $sufijo);
                     die('RECHAZADO');
                 } else {
+                    log_me("ORDEN EXISTENTE " . $order_id, $sufijo);
+                    //CUANDO UNA ORDEN ES PAGADA SE VA A ON HOLD.
 
-                    if ($order->status == 'pending') {
-                        log_me("ORDEN DE COMPRA NO PAGADA (PENDING). Se procede con el pago de la orden " . $order_id, $sufijo);
-                    } else {
-                        log_me("ORDEN YA PAGADA (" . $order->status . ") EXISTENTE " . $order_id, "\t" . $sufijo);
+                    if ($order->status == 'completed') {
+                        log_me("ORDEN YA PAGADA (COMPLETED) EXISTENTE " . $order_id, "\t" . $sufijo);
                         die('RECHAZADO');
+                    } else {
+
+                        if ($order->status == 'pending') {
+                            log_me("ORDEN DE COMPRA NO PAGADA (PENDING). Se procede con el pago de la orden " . $order_id, $sufijo);
+                        } else {
+                            log_me("ORDEN YA PAGADA (" . $order->status . ") EXISTENTE " . $order_id, "\t" . $sufijo);
+                            die('RECHAZADO');
+                        }
                     }
                 }
-            }
 
 
-            /*             * **************** CONFIGURAR AQUI ****************** */
-            $myPath = dirname(__FILE__) . "/comun/dato$TBK_ID_SESION.log";
-            //GENERA ARCHIVO PARA MAC
-            $filename_txt = dirname(__FILE__) . "/comun/MAC01Normal$TBK_ID_SESION.txt";
-            // Ruta Checkmac
-            $cmdline = $this->macpath . "/tbk_check_mac.cgi $filename_txt";
-            /*             * **************** FIN CONFIGURACION **************** */
-            $acepta = false;
-            //lectura archivo que guardo pago.php
-            if ($fic = fopen($myPath, "r")) {
-                $linea = fgets($fic);
-                fclose($fic);
-            }
-            $detalle = split(";", $linea);
-            if (count($detalle) >= 1) {
-                $monto = $detalle[0];
-                $ordenCompra = $detalle[1];
-            }
-            //guarda los datos del post uno a uno en archivo para la ejecuci�n del MAC
-            $fp = fopen($filename_txt, "wt");
-            while (list($key, $val) = each($_POST)) {
-                fwrite($fp, "$key=$val&");
-            }
-            fclose($fp);
-            //Validaci�n de respuesta de Transbank, solo si es 0 continua con la pagina de cierre
-            if ($TBK_RESPUESTA == "0") {
-                $acepta = true;
-            } else {
+                /*                 * **************** CONFIGURAR AQUI ****************** */
+                $myPath = dirname(__FILE__) . "/comun/dato$TBK_ID_SESION.log";
+                //GENERA ARCHIVO PARA MAC
+                $filename_txt = dirname(__FILE__) . "/comun/MAC01Normal$TBK_ID_SESION.txt";
+                // Ruta Checkmac
+                $cmdline = $this->macpath . "/tbk_check_mac.cgi $filename_txt";
+                /*                 * **************** FIN CONFIGURACION **************** */
                 $acepta = false;
-            }
-            //validaci�n de monto y Orden de compra
-            if ($TBK_MONTO == $monto && $TBK_ORDEN_COMPRA == $ordenCompra && $acepta == true) {
-                $acepta = true;
-            } else {
-                $acepta = false;
-            }
-
-            //Validaci�n MAC
-            if ($acepta == true) {
-                exec($cmdline, $result, $retint);
-                if ($result [0] == "CORRECTO")
+                //lectura archivo que guardo pago.php
+                if ($fic = fopen($myPath, "r")) {
+                    $linea = fgets($fic);
+                    fclose($fic);
+                }
+                $detalle = split(";", $linea);
+                if (count($detalle) >= 1) {
+                    $monto = $detalle[0];
+                    $ordenCompra = $detalle[1];
+                }
+                //guarda los datos del post uno a uno en archivo para la ejecuci�n del MAC
+                $fp = fopen($filename_txt, "wt");
+                while (list($key, $val) = each($_POST)) {
+                    fwrite($fp, "$key=$val&");
+                }
+                fclose($fp);
+                //Validaci�n de respuesta de Transbank, solo si es 0 continua con la pagina de cierre
+                if ($TBK_RESPUESTA == "0") {
                     $acepta = true;
-                else
+                } else {
                     $acepta = false;
-            }
-            ?>
+                }
+                //validaci�n de monto y Orden de compra
+                if ($TBK_MONTO == $monto && $TBK_ORDEN_COMPRA == $ordenCompra && $acepta == true) {
+                    $acepta = true;
+                } else {
+                    $acepta = false;
+                }
+
+                //Validaci�n MAC
+                if ($acepta == true) {
+                    exec($cmdline, $result, $retint);
+                    if ($result [0] == "CORRECTO")
+                        $acepta = true;
+                    else
+                        $acepta = false;
+                }
+                ?>
             <html>
                 <?php
                 if ($acepta == true) {
@@ -595,7 +602,7 @@ jQuery(function(){
                     ACEPTADO
                 <?php } else { ?>
                     RECHAZADO
-            <?php } exit; ?>
+                <?php } exit; ?>
             </html>
 
             <?php
