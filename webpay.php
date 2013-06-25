@@ -31,17 +31,20 @@ add_action('plugins_loaded', 'init_woocommerce_webpay');
 /*
  * Se agrega nuestro Gateway de pago al array que posee WooCommerce
  */
+
 function add_webpay_gateway_class($methods) {
     $methods[] = 'WC_WebPay';
     return $methods;
 }
+
 add_filter('woocommerce_payment_gateways', 'add_webpay_gateway_class');
 
 /*
  * Se crea la clase de conexión
  */
+
 function init_woocommerce_webpay() {
-    
+
     /*
      * Si la clase de la cual quiero heredar no existe no hago nada.
      */
@@ -49,7 +52,6 @@ function init_woocommerce_webpay() {
         return;
 
     class WC_Webpay extends WC_Payment_Gateway {
-        
 
         /**
          * Constructor for the gateway.
@@ -83,15 +85,15 @@ function init_woocommerce_webpay() {
             $this->liveurl = $this->settings['cgiurl'];
             $this->macpath = $this->settings['macpath'];
 
-            
-            $this->redirect_page_id = $this->settings['redirect_page_id'];
-             
-            // Actions
-            add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
-            add_action('woocommerce_thankyou_webpay', array($this, 'thankyou_page'));
 
+            $this->redirect_page_id = $this->settings['redirect_page_id'];
+
+            // Actions
+            add_action('woocommerce_update_options_payment_gateways_' . $this->id, array(&$this, 'process_admin_options'));
+            add_action('woocommerce_thankyou_webpay', array(&$this, 'thankyou_page'));
+            add_action('woocommerce_receipt_webpay', array(&$this, 'receipt_page'));
             // Customer Emails
-            add_action('woocommerce_email_before_order_table', array($this, 'email_instructions'), 10, 2);
+            // add_action('woocommerce_email_before_order_table', array($this, 'email_instructions'), 10, 2);
         }
 
         /**
@@ -199,9 +201,6 @@ function init_woocommerce_webpay() {
 //
 //            echo '</ul>';
 //        }
-
-       
-
 //        function receipt_page($order) {
 //            echo '<p>' . __('Gracias por tu pedido, por favor haz click a continuación para pagar con webpay', 'woocommerce') . '</p>';
 //            echo $this->generate_webpay_form($order);
@@ -222,6 +221,7 @@ function init_woocommerce_webpay() {
             return array('result' => 'success', 'redirect' => add_query_arg('order', $order->id, add_query_arg('key', $order->order_key, get_permalink(get_option('woocommerce_pay_page_id'))))
             );
         }
+
         public function generate_webpay_form($order_id) {
             global $woocommerce;
             $order = &new WC_Order($order_id);
@@ -454,7 +454,7 @@ jQuery(function(){
 //                    'redirect' => add_query_arg('key', $order->order_key, add_query_arg('order', $order->id, get_permalink(woocommerce_get_page_id('thanks'))))
 //                );
 //            }
-     
+
 
         function thankyouContent($content) {
             echo $this->msg;
@@ -609,8 +609,8 @@ jQuery(function(){
     }
 
     //End of the GateWay Class
-    
-        function woocommerce_payment_complete_add_data_webpay($order_id, $TBK) {
+
+    function woocommerce_payment_complete_add_data_webpay($order_id, $TBK) {
         global $webpay_table_name;
         global $wpdb;
 
@@ -637,6 +637,5 @@ jQuery(function(){
     }
 
     add_action('woocommerce_payment_complete', 'woocommerce_payment_complete_add_data_webpay', 10, 1);
-
 }
 ?>
