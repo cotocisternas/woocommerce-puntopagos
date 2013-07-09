@@ -3,7 +3,7 @@
   Plugin Name: Woocommerce Webpay ( Chilean Payment Gateway )
   Description: Sistema de pagos de WooCommerce con WebPay
   Author: Cristian Tala Sánchez
-  Version: 2.0.1
+  Version: 2.0
   Author URI: www.cristiantala.cl
 
   This program is free software: you can redistribute it and/or modify
@@ -62,13 +62,14 @@ function init_woocommerce_webpay() {
         public function __construct() {
 
             if (isset($_REQUEST['page_id'])):
-                if ($_REQUEST['page_id'] == 'xt_compra') {
-                    add_action('woocommerce_api_' . strtolower(get_class($this)), array($this, 'xt_compra'));
+                if ($_REQUEST['page_id'] == 'xt_compra') 
+				{		
+					add_action( 'woocommerce_api_' . strtolower( get_class( $this ) ), array( $this, 'xt_compra' ) );				
                 } else {
                     //add_action('init', array(&$this, 'check_webpay_response'));
-                    $this->check_webpay_response();
+					$this->check_webpay_response();
                 }
-            endif;
+            endif;			
             $this->id = 'webpay';
             $this->has_fields = false;
             $this->icon = WP_PLUGIN_URL . "/" . plugin_basename(dirname(__FILE__)) . '/images/logo.png';
@@ -89,7 +90,8 @@ function init_woocommerce_webpay() {
 
 // Actions
             add_action('woocommerce_update_options_payment_gateways_' . $this->id, array(&$this, 'process_admin_options'));
-            add_action('woocommerce_thankyou_webpay', array(&$this, 'thankyou_page'));
+            //add_action('woocommerce_thankyou_webpay', array(&$this, 'thankyou_page'));
+			add_action('woocommerce_thankyou_webpay', array(&$this, 'thankyousuccess_page'));
             add_action('woocommerce_receipt_webpay', array(&$this, 'receipt_page'));
 // Customer Emails
 // add_action('woocommerce_email_before_order_table', array($this, 'email_instructions'), 10, 2);
@@ -145,6 +147,16 @@ function init_woocommerce_webpay() {
                     'type' => 'select',
                     'options' => $this->get_pages('Select Page'),
                     'description' => "URL of success page"
+                ),
+				'trade_name' => array(
+                    'title' => __('Nombre del Comercio', 'woocommerce'),
+                    'type' => 'text',
+                    'description' => __('Trade Name like : Christian W', 'woocommerce')
+                ),
+				'url_commerce' => array(
+                    'title' => __('URL Comercio', 'woocommerce'),
+                    'type' => 'text',
+                    'description' => __('Url Commerce like : http://www.empresasctm.cl', 'woocommerce')
                 ),
             );
         }
@@ -241,6 +253,139 @@ function init_woocommerce_webpay() {
                 endif;
             endif;
         }
+		
+		function thankyousuccess_page() {
+		  if (isset($_REQUEST['status'])):
+		  if ($_REQUEST['status'] == "failure"):
+			echo '<h2>' . __('Un error ha ocurrido', 'webpay') . '</h2>';
+
+			$TBK_ID_SESION
+					= $_REQUEST["TBK_ID_SESION"];
+			$TBK_ORDEN_COMPRA
+					= $_REQUEST["TBK_ORDEN_COMPRA"];
+			?>
+                    <CENTER>
+                        <B>TRANSACCIÓN FRACASADA !!!</B>
+                        <TABLE>
+                            <TR><TH>FRACASO</TH></TR>
+                            <TR><TD>
+                                    TBK_ID_SESION=<?PHP echo $TBK_ID_SESION; ?><BR>
+                                    TBK_ORDEN_COMPRA=<?PHP echo $TBK_ORDEN_COMPRA; ?><BR>
+                                </TD></TR>
+                        </TABLE>
+                    </CENTER>
+		  <?php
+		  else:
+		  //IF IT IS A WEBPAY PAYMENT
+		  global $webpay_table_name;
+		  global $wpdb; 
+		  $order_id = explode('_', $_REQUEST['order']);
+          $order_id = (int) $order_id[0];
+		  $paramArr = array();
+		  $myOrderDetails = $wpdb->get_row("SELECT * FROM $webpay_table_name WHERE idOrder = $order_id", ARRAY_A);
+		  if ($myOrderDetails):
+        ?>
+			<h2 class="related_products_title order_confirmed"><?= "Información Extra de la Transacción"; ?></h2>
+			<div class="clear"></div>
+			<table class="shop_table order_details">
+				<thead>
+					<tr>
+						<th class="product-name"><?= "Dato" ?></th>
+						<th class="product-quantity"><?= "Valor"; ?></th>
+	
+	
+					</tr>
+				</thead>
+				<tfoot>
+	
+					<tr>
+						<th>Tipo de Transacción</th>
+						<th>Venta</th>
+	
+					</tr>
+					<tr>
+						<th>Nombre del Comercio</th>
+						<th><?php echo $this->settings['trade_name']; ?></th>
+	
+					</tr>
+					<tr>
+						<th>URL Comercio</th>
+						<th><?php echo $this->settings['url_commerce']; ?></th>
+	
+					</tr>
+	
+					<tr>
+						<th>Código de Autorización</th>
+						<th><?= $myOrderDetails['TBK_CODIGO_AUTORIZACION'] ?></th>
+	
+	
+					</tr>
+	
+					<tr>
+						<th>Final de Tarjeta</th>
+						<th><?= $myOrderDetails['TBK_FINAL_NUMERO_TARJETA'] ?></th>
+	
+	
+					</tr>
+	
+					<tr>
+						<th>Tipo de pago</th>
+						<th><?
+							if ($myOrderDetails['TBK_TIPO_PAGO'] == "VD") {
+								echo "Redcompra </th></tr>";
+								echo "<tr><td>Tipo de Cuota</td><td>Débito</td></tr>";
+							} else {
+								echo "Crédito </th></tr>";
+								echo '<tr><td>Tipo de Cuota</td><td>';
+								switch ($myOrderDetails['TBK_TIPO_PAGO']) {
+									case 'VN':
+										echo 'Sin Cuotas';
+										break;
+									case 'VC':
+										echo 'Cuotas Normales';
+										break;
+									case 'SI':
+										echo 'Sin interés';
+										break;
+									case 'CI':
+										echo 'Cuotas Comercio';
+										break;
+	
+									default:
+										echo $myOrderDetails['TBK_TIPO_PAGO'];
+										break;
+								}
+							}
+							?>
+	
+							</td>
+	
+					</tr>
+	
+					<?
+					if (!($myOrderDetails['TBK_TIPO_PAGO'] == "VD") || true):
+						?>
+						<tr>
+							<th>Número de Cuotas</th>
+							<th><?
+								if (!($myOrderDetails['TBK_NUMERO_CUOTAS'] == "0")) {
+									echo $myOrderDetails['TBK_NUMERO_CUOTAS'];
+								} else {
+									echo "00";
+								}
+								?></th>
+	
+						</tr>
+						<?
+					endif;
+					?>
+				</tfoot>
+			</table>
+			<?php
+			endif;
+			endif;
+			endif;
+		}
 
         function receipt_page($order) {
             echo '<p>' . __('Gracias por tu pedido, por favor haz click a continuación para pagar con webpay', 'woocommerce') . '</p>';
@@ -259,7 +404,7 @@ function init_woocommerce_webpay() {
 
         function process_payment($order_id) {
             $sufijo = "[WEBPAY - PROCESS - PAYMENT]";
-            log_me("Iniciando el proceso de pago para $order_id", $sufijo);
+            log_me("Iniciando el proceso de pago para $order_id",$sufijo);
             $order = &new WC_Order($order_id);
             return array('result' => 'success', 'redirect' => add_query_arg('order', $order->id, add_query_arg('key', $order->order_key, get_permalink(get_option('woocommerce_pay_page_id'))))
             );
@@ -318,7 +463,7 @@ function init_woocommerce_webpay() {
             fclose($fic);
             log_me("ARCHIVO CERRADO", $SUFIJO);
 
-            log_me("Argumentos", $SUFIJO);
+            log_me("Argumentos",$SUFIJO);
             $ccavenue_args = array(
                 'TBK_TIPO_TRANSACCION' => "TR_NORMAL",
                 'TBK_MONTO' => $TBK_MONTO,
@@ -328,8 +473,8 @@ function init_woocommerce_webpay() {
                 'TBK_URL_FRACASO' => $redirect_url . $queryStr . "status=failure&order=$order_id&key=$order_key",
             );
             log_me($ccavenue_args);
-
-
+            
+            
             $woopayment = array();
             foreach ($ccavenue_args as $key => $value) {
                 $woopayment[] = "<input type='hidden' name='$key' value='$value'/>";
@@ -463,9 +608,9 @@ function init_woocommerce_webpay() {
                                 );
 
                                 //                                log_me("INICIO INFO PARA AGREGAR A LA DB EN CHECK RESPONSE");
-                                //                                log_me($TBK);
+                                //                                log_me($TBK);  
                                 //                                log_me("FIN INFO PARA AGREGAR A LA DB EN CHECK RESPONSE");
-                                //
+                                //                                
                                 log_me("INSERTANDO EN LA BDD");
                                 woocommerce_payment_complete_add_data_webpay($order_id, $TBK);
                                 log_me("TERMINANDO INSERSIÓN");
@@ -492,6 +637,34 @@ function init_woocommerce_webpay() {
             log_me("SALIENDO DEL RESPONSE", $SUFIJO);
         }
 
+        /**
+         * Process the payment and return the result
+         *
+         * @access public
+         * @param int $order_id
+         * @return array
+         */
+        //            function process_payment($order_id) {
+        //                global $woocommerce;
+        //
+    //                $order = new WC_Order($order_id);
+        //
+    //                // Mark as on-hold (we're awaiting the payment)
+        //                $order->update_status('on-hold', __('Awaiting BACS payment', 'woocommerce'));
+        //
+    //                // Reduce stock levels
+        //                $order->reduce_order_stock();
+        //
+    //                // Remove cart
+        //                $woocommerce->cart->empty_cart();
+        //
+    //                // Return thankyou redirect
+        //                return array(
+        //                    'result' => 'success',
+        //                    'redirect' => add_query_arg('key', $order->order_key, add_query_arg('order', $order->id, get_permalink(woocommerce_get_page_id('thanks'))))
+        //                );
+        //            }
+
 
         function thankyouContent($content) {
             //echo $this->msg;
@@ -502,7 +675,7 @@ function init_woocommerce_webpay() {
             global $wpdb;
             global $woocommerce;
             $sufijo = "[XT_COMPRA]";
-            log_me("Iniciando xt_compra", $sufijo);
+            log_me("Iniciando xt_compra",$sufijo);
 
             //rescate de datos de POST.
             $TBK_RESPUESTA = $_POST["TBK_RESPUESTA"];
@@ -557,27 +730,35 @@ function init_woocommerce_webpay() {
             if ($TBK_RESPUESTA == -1)
                 die("ACEPTADO");
 
-            //Validar que la orden exista
+            //Validar que la orden exista         
             $order = new WC_Order($order_id);
             log_me($order->status, $sufijo);
 
             //Si la orden de compra no tiene status es debido a que no existe
 
-            if ($order->status == '') {
+            if ($order->status == '') 
+			{
                 log_me("ORDEN NO EXISTENTE " . $order_id, $sufijo);
                 die('RECHAZADO');
-            } else {
+            } 
+			else 
+			{
                 log_me("ORDEN EXISTENTE " . $order_id, $sufijo);
                 //CUANDO UNA ORDEN ES PAGADA SE VA A ON HOLD.
 
-                if ($order->status == 'completed') {
+                if ($order->status == 'completed') 
+				{
                     log_me("ORDEN YA PAGADA (COMPLETED) EXISTENTE " . $order_id, "\t" . $sufijo);
                     die('RECHAZADO');
-                } else {
+                } 
+				else 
+				{
 
-                    if ($order->status == 'pending' || $order->status == 'failed') {
+                    if ($order->status == 'pending' || $order->status == 'failed') 
+					{
                         log_me("ORDEN DE COMPRA NO PAGADA (PENDING). Se procede con el pago de la orden " . $order_id, $sufijo);
-                    } else {
+                    } else 
+					{
                         log_me("ORDEN YA PAGADA (" . $order->status . ") EXISTENTE " . $order_id, "\t" . $sufijo);
                         die('RECHAZADO');
                     }
@@ -586,15 +767,9 @@ function init_woocommerce_webpay() {
 
 
             /*             * **************** CONFIGURAR AQUI ****************** */
-
-            log_me("Iniciando la Escritura en datos", "\t \t" . $sufijo);
-
             $myPath = dirname(__FILE__) . "/comun/dato$TBK_ID_SESION.log";
-            log_me($myPath, "\t \t" . $sufijo);
-
             //GENERA ARCHIVO PARA MAC
             $filename_txt = dirname(__FILE__) . "/comun/MAC01Normal$TBK_ID_SESION.txt";
-            log_me("Archivo $filename_txt", "\t \t" . $sufijo);
             // Ruta Checkmac
             $cmdline = $this->macpath . "/tbk_check_mac.cgi $filename_txt";
             /*             * **************** FIN CONFIGURACION **************** */
@@ -638,49 +813,49 @@ function init_woocommerce_webpay() {
             }
             ?>
             <html>
-            <?php
-            if ($acepta == true) {
-                ?>
+                <?php
+                if ($acepta == true) {
+                    ?>
                     ACEPTADO
-            <?php } else { ?>
+                <?php } else { ?>
                     RECHAZADO
-            <?php } exit; ?>
+                <?php } exit; ?>
             </html>
 
-                <?php
-                log_me("FINALIZANDO XT_COMPRA", $sufijo);
-            }
-
+            <?php
+            log_me("FINALIZANDO XT_COMPRA",$sufijo);
         }
 
-        //End of the GateWay Class
-
-        function woocommerce_payment_complete_add_data_webpay($order_id, $TBK) {
-            global $webpay_table_name;
-            global $wpdb;
-
-            log_me("idOrden : ");
-            log_me($order_id);
-            log_me('TBK:');
-            log_me($TBK);
-            $rows_affected = $wpdb->insert($webpay_table_name, array(
-                'idOrder' => $order_id,
-                'TBK_ORDEN_COMPRA' => $TBK['TBK_ORDEN_COMPRA'][1],
-                'TBK_TIPO_TRANSACCION' => $TBK['TBK_TIPO_TRANSACCION'][1],
-                'TBK_RESPUESTA' => $TBK['TBK_RESPUESTA'][1],
-                'TBK_MONTO' => $TBK['TBK_MONTO'][1],
-                'TBK_CODIGO_AUTORIZACION' => $TBK['TBK_CODIGO_AUTORIZACION'][1],
-                'TBK_FINAL_NUMERO_TARJETA' => $TBK['TBK_FINAL_NUMERO_TARJETA'][1],
-                'TBK_FECHA_CONTABLE' => $TBK['TBK_FECHA_CONTABLE'][1],
-                'TBK_FECHA_TRANSACCION' => $TBK['TBK_FECHA_TRANSACCION'][1],
-                'TBK_HORA_TRANSACCION' => $TBK['TBK_HORA_TRANSACCION'][1],
-                'TBK_ID_TRANSACCION' => $TBK['TBK_ID_TRANSACCION'][1],
-                'TBK_TIPO_PAGO' => $TBK['TBK_TIPO_PAGO'][1],
-                'TBK_NUMERO_CUOTAS' => $TBK['TBK_NUMERO_CUOTAS'][1],
-                    )
-            );
-        }
-
-        add_action('woocommerce_payment_complete', 'woocommerce_payment_complete_add_data_webpay', 10, 1);
     }
-    ?>
+
+    //End of the GateWay Class
+
+    function woocommerce_payment_complete_add_data_webpay($order_id, $TBK) {
+        global $webpay_table_name;
+        global $wpdb;
+
+        log_me("idOrden : ");
+        log_me($order_id);
+        log_me('TBK:');
+        log_me($TBK);
+        $rows_affected = $wpdb->insert($webpay_table_name, array(
+            'idOrder' => $order_id,
+            'TBK_ORDEN_COMPRA' => $TBK['TBK_ORDEN_COMPRA'][1],
+            'TBK_TIPO_TRANSACCION' => $TBK['TBK_TIPO_TRANSACCION'][1],
+            'TBK_RESPUESTA' => $TBK['TBK_RESPUESTA'][1],
+            'TBK_MONTO' => $TBK['TBK_MONTO'][1],
+            'TBK_CODIGO_AUTORIZACION' => $TBK['TBK_CODIGO_AUTORIZACION'][1],
+            'TBK_FINAL_NUMERO_TARJETA' => $TBK['TBK_FINAL_NUMERO_TARJETA'][1],
+            'TBK_FECHA_CONTABLE' => $TBK['TBK_FECHA_CONTABLE'][1],
+            'TBK_FECHA_TRANSACCION' => $TBK['TBK_FECHA_TRANSACCION'][1],
+            'TBK_HORA_TRANSACCION' => $TBK['TBK_HORA_TRANSACCION'][1],
+            'TBK_ID_TRANSACCION' => $TBK['TBK_ID_TRANSACCION'][1],
+            'TBK_TIPO_PAGO' => $TBK['TBK_TIPO_PAGO'][1],
+            'TBK_NUMERO_CUOTAS' => $TBK['TBK_NUMERO_CUOTAS'][1],
+                )
+        );
+    }
+
+    add_action('woocommerce_payment_complete', 'woocommerce_payment_complete_add_data_webpay', 10, 1);
+}
+?>
