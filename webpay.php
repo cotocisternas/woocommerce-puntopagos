@@ -205,8 +205,8 @@ function init_woocommerce_webpay() {
                         <TABLE>
                             <TR><TH>FRACASO</TH></TR>
                             <TR><TD>
-                                    TBK_ID_SESION=<?PHP ECHO $TBK_ID_SESION; ?><BR>
-                                    TBK_ORDEN_COMPRA=<?PHP ECHO $TBK_ORDEN_COMPRA; ?><BR>
+                                    TBK_ID_SESION=<?php ECHO $TBK_ID_SESION; ?><BR>
+                                    TBK_ORDEN_COMPRA=<?php ECHO $TBK_ORDEN_COMPRA; ?><BR>
                                 </TD></TR>
                         </TABLE>
                     </CENTER>
@@ -220,8 +220,8 @@ function init_woocommerce_webpay() {
                         <TABLE>
                             <TR><TH>Éxito</TH></TR>
                             <TR><TD>
-                                    TBK_ID_SESION=<?PHP ECHO $TBK_ID_SESION; ?><BR>
-                                    TBK_ORDEN_COMPRA=<?PHP ECHO $TBK_ORDEN_COMPRA; ?><BR>
+                                    TBK_ID_SESION=<?php ECHO $TBK_ID_SESION; ?><BR>
+                                    TBK_ORDEN_COMPRA=<?php ECHO $TBK_ORDEN_COMPRA; ?><BR>
                                 </TD></TR>
                         </TABLE>
                     </CENTER>
@@ -269,8 +269,8 @@ function init_woocommerce_webpay() {
                         <TABLE>
                             <TR><TH>FRACASO</TH></TR>
                             <TR><TD>
-                                    TBK_ID_SESION=<?PHP echo $TBK_ID_SESION; ?><BR>
-                                    TBK_ORDEN_COMPRA=<?PHP echo $TBK_ORDEN_COMPRA; ?><BR>
+                                    TBK_ID_SESION=<?php echo $TBK_ID_SESION; ?><BR>
+                                    TBK_ORDEN_COMPRA=<?php echo $TBK_ORDEN_COMPRA; ?><BR>
                                 </TD></TR>
                         </TABLE>
                     </CENTER>
@@ -290,8 +290,8 @@ function init_woocommerce_webpay() {
 			<table class="shop_table order_details">
 				<thead>
 					<tr>
-						<th class="product-name"><?= "Dato" ?></th>
-						<th class="product-quantity"><?= "Valor"; ?></th>
+						<th class="product-name"><?php echo "Dato" ?></th>
+						<th class="product-quantity"><?php echo "Valor"; ?></th>
 	
 	
 					</tr>
@@ -316,21 +316,21 @@ function init_woocommerce_webpay() {
 	
 					<tr>
 						<th>Código de Autorización</th>
-						<th><?= $myOrderDetails['TBK_CODIGO_AUTORIZACION'] ?></th>
+						<th><?php echo $myOrderDetails['TBK_CODIGO_AUTORIZACION'] ?></th>
 	
 	
 					</tr>
 	
 					<tr>
 						<th>Final de Tarjeta</th>
-						<th><?= $myOrderDetails['TBK_FINAL_NUMERO_TARJETA'] ?></th>
+						<th><?php echo $myOrderDetails['TBK_FINAL_NUMERO_TARJETA'] ?></th>
 	
 	
 					</tr>
 	
 					<tr>
 						<th>Tipo de pago</th>
-						<th><?
+						<th><?php 
 							if ($myOrderDetails['TBK_TIPO_PAGO'] == "VD") {
 								echo "Redcompra </th></tr>";
 								echo "<tr><td>Tipo de Cuota</td><td>Débito</td></tr>";
@@ -362,12 +362,12 @@ function init_woocommerce_webpay() {
 	
 					</tr>
 	
-					<?
+					<?php 
 					if (!($myOrderDetails['TBK_TIPO_PAGO'] == "VD") || true):
 						?>
 						<tr>
 							<th>Número de Cuotas</th>
-							<th><?
+							<th><?php 
 								if (!($myOrderDetails['TBK_NUMERO_CUOTAS'] == "0")) {
 									echo $myOrderDetails['TBK_NUMERO_CUOTAS'];
 								} else {
@@ -376,7 +376,7 @@ function init_woocommerce_webpay() {
 								?></th>
 	
 						</tr>
-						<?
+						<?php 
 					endif;
 					?>
 				</tfoot>
