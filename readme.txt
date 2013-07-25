@@ -16,6 +16,7 @@ Stable tag: 2.1.1
 
 This plugin enables to pay with webpay plus ( Chile ) in Woocommerce 
 
+Wiki Home : https://bitbucket.org/ctala/woocommerce-webpay/wiki/Home
 
 
 

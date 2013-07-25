@@ -1,4 +1,5 @@
-# Este es el README, espero poner las instrucciones pronto.
+#WIKI
+https://bitbucket.org/ctala/woocommerce-webpay/wiki/Home
 
 #Instalación.
 
