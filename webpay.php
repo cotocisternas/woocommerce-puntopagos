@@ -838,6 +838,9 @@ function init_woocommerce_webpay() {
         global $webpay_table_name;
         global $wpdb;
 
+	$order = new WC_Order($order_id);
+	$order->add_order_note("Pago Completado. Transacción : ".$TBK['TBK_CODIGO_AUTORIZACION'][1]);
+
         log_me("idOrden : ");
         log_me($order_id);
         log_me('TBK:');
