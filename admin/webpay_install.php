@@ -10,10 +10,14 @@ $webpay_db_version = "1.0";
 global $webpay_table_name;
 $webpay_table_name = $wpdb->prefix . "webpay";
 
+global $webpay_comun_folder;
+$webpay_comun_folder = wp_upload_dir()['basedir'].DIRECTORY_SEPARATOR."webpay-data".DIRECTORY_SEPARATOR."comun";
+
 function webpay_install() {
     global $wpdb;
     global $webpay_db_version;
     global $webpay_table_name;
+	global $webpay_comun_folder;
 
 
 
@@ -39,7 +43,24 @@ function webpay_install() {
     require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
     dbDelta($sql);
 
+	log_me("Revision de la carpeta común. -> ".$webpay_comun_folder);
     add_option("webpay_db_version", $webpay_db_version);
+
+	//Crear la carpeta en donde se guardarán los logs.
+	if(!file_exists($webpay_comun_folder))
+	{
+		log_me("Carpeta comun no existe, se inicia la creación.");
+		mkdir($webpay_comun_folder, 0777, true);	
+		chmod($webpay_comun_folder, 0777);
+		touch($webpay_comun_folder.DIRECTORY_SEPARATOR."index.php");
+	}
+	else
+	{
+		log_me("Carpeta común existe. Se revisarán los permisos.");
+		chmod($webpay_comun_folder, 0777); 
+	}
+
+		
 }
 
 ?>

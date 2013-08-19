@@ -23,6 +23,10 @@ Wiki Home : https://bitbucket.org/ctala/woocommerce-webpay/wiki/Home
 == Changelog ==
 
 
+= 2.1.2 =
+Arreglada la creación automática del directorio común.
+Ahora la carpeta común estará bajo uploadas para que no se borre al actualizar el plugin.
+
 = 2.1 =
 Added the eCommerce Variables.
 

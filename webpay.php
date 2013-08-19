@@ -3,7 +3,7 @@
   Plugin Name: Woocommerce Webpay ( Chilean Payment Gateway )
   Description: Sistema de pagos de WooCommerce con WebPay
   Author: Cristian Tala Sánchez
-  Version: 2.1.1
+  Version: 2.1.2
   Author URI: www.cristiantala.cl
 
   This program is free software: you can redistribute it and/or modify
@@ -412,6 +412,7 @@ function init_woocommerce_webpay() {
 
         public function generate_webpay_form($order_id) {
             global $woocommerce;
+		global $webpay_comun_folder;
             $SUFIJO = "[WEBPAY - FORM]";
 
             $order = &new WC_Order($order_id);
@@ -441,13 +442,14 @@ function init_woocommerce_webpay() {
 //            endif;
             //Archivos de datos para uso de pagina de cierre
 
-            log_me("Entrando a la verificación de carpetas", $SUFIJO);
-            if (!is_dir(dirname($filename) . "/comun")) {
-                mkdir(dirname($filename) . "/comun", 0777);
-                chmod(dirname($filename) . "/comun", 0777);
-            }
+            //log_me("Entrando a la verificación de carpetas", $SUFIJO);
+            //if (!is_dir(dirname($filename) . "/comun")) {
+            //    mkdir(dirname($filename) . "/comun", 0777);
+            //    chmod(dirname($filename) . "/comun", 0777);
+            //}
 
-            $myPath = dirname(__FILE__) . "/comun/dato$TBK_ID_SESION.log";
+            //$myPath = dirname(__FILE__) . "/comun/dato$TBK_ID_SESION.log";
+            $myPath = $webpay_comun_folder.DIRECTORY_SEPARATOR."dato$TBK_ID_SESION.log";
 
             log_me("Se utilizará $myPath para guardar los datos", $SUFIJO);
             /*             * **************** FIN CONFIGURACION **************** */
@@ -538,6 +540,7 @@ function init_woocommerce_webpay() {
          * */
         function check_webpay_response() {
             global $woocommerce;
+		global $webpay_comun_folder;
             $SUFIJO = "[WEBPAY - RESPONSE]";
 
             log_me("Entrando al Webpay Response", $SUFIJO);
@@ -583,7 +586,7 @@ function init_woocommerce_webpay() {
 
 
                                 //Archivo previamente generado para rescatar la información.
-                                $myPath = dirname(__FILE__) . "/comun/MAC01Normal$TBK_ID_SESION.txt";
+                                $myPath = $webpay_comun_folder.DIRECTORY_SEPARATOR."MAC01Normal$TBK_ID_SESION.txt";
                                 /*                                 * **************** FIN CONFIGURACION **************** */
                                 //Rescate de los valores informados por transbank
                                 $fic = fopen($myPath, "r");
@@ -674,7 +677,8 @@ function init_woocommerce_webpay() {
             global $webpay_table_name;
             global $wpdb;
             global $woocommerce;
-            $sufijo = "[XT_COMPRA]";
+            global $webpay_comun_folder;
+		$sufijo = "[XT_COMPRA]";
             log_me("Iniciando xt_compra",$sufijo);
 
             //rescate de datos de POST.
@@ -767,9 +771,9 @@ function init_woocommerce_webpay() {
 
 
             /*             * **************** CONFIGURAR AQUI ****************** */
-            $myPath = dirname(__FILE__) . "/comun/dato$TBK_ID_SESION.log";
+            $myPath = $webpay_comun_folder.DIRECTORY_SEPARATOR."dato$TBK_ID_SESION.log";
             //GENERA ARCHIVO PARA MAC
-            $filename_txt = dirname(__FILE__) . "/comun/MAC01Normal$TBK_ID_SESION.txt";
+            $filename_txt = $webpay_comun_folder.DIRECTORY_SEPARATOR."MAC01Normal$TBK_ID_SESION.txt";
             // Ruta Checkmac
             $cmdline = $this->macpath . "/tbk_check_mac.cgi $filename_txt";
             /*             * **************** FIN CONFIGURACION **************** */
