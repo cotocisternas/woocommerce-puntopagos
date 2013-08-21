@@ -8,9 +8,9 @@ Tags:
 
 Requires at least: 3, 3.3+ and WooCommerce 1.6+
 
-Tested up to: 3.3.1
+Tested up to: 3.6
 
-Stable tag: 2.1.3
+Stable tag: 2.1.6
 
 == Description ==
 
@@ -21,6 +21,10 @@ Wiki Home : https://bitbucket.org/ctala/woocommerce-webpay/wiki/Home
 
 
 == Changelog ==
+
+
+= 2.1.6 =
+Modificado para que funcionara con versiones más antiguas de php.
 
 = 2.1.3 =
 Agregado Mensaje en Notas del pedido.

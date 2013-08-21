@@ -11,13 +11,15 @@ global $webpay_table_name;
 $webpay_table_name = $wpdb->prefix . "webpay";
 
 global $webpay_comun_folder;
-$webpay_comun_folder = wp_upload_dir()['basedir'].DIRECTORY_SEPARATOR."webpay-data".DIRECTORY_SEPARATOR."comun";
+$webpay_comun_folder = WP_CONTENT_DIR.DIRECTORY_SEPARATOR."uploads".DIRECTORY_SEPARATOR."webpay-comun";
 
 function webpay_install() {
     global $wpdb;
     global $webpay_db_version;
     global $webpay_table_name;
+	//Cambio legacy con la versión anterior para los que tienen versiones de PHP más antiguas.
 	global $webpay_comun_folder;
+	//ebpay_comun_folder = wp_upload_dir()['basedir'].DIRECTORY_SEPARATOR."webpay-data".DIRECTORY_SEPARATOR."comun";
 
 
 
@@ -50,14 +52,14 @@ function webpay_install() {
 	if(!file_exists($webpay_comun_folder))
 	{
 		log_me("Carpeta comun no existe, se inicia la creación.");
-		mkdir($webpay_comun_folder, 0700, true);	
-		chmod($webpay_comun_folder, 0700);
+		mkdir($webpay_comun_folder, 0760, true);	
+		chmod($webpay_comun_folder, 0760);
 		touch($webpay_comun_folder.DIRECTORY_SEPARATOR."index.php");
 	}
 	else
 	{
 		log_me("Carpeta común existe. Se revisarán los permisos.");
-		chmod($webpay_comun_folder, 0700); 
+		chmod($webpay_comun_folder, 0760); 
 	}
 
 		
