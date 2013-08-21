@@ -50,14 +50,14 @@ function webpay_install() {
 	if(!file_exists($webpay_comun_folder))
 	{
 		log_me("Carpeta comun no existe, se inicia la creación.");
-		mkdir($webpay_comun_folder, 0777, true);	
-		chmod($webpay_comun_folder, 0777);
+		mkdir($webpay_comun_folder, 0700, true);	
+		chmod($webpay_comun_folder, 0700);
 		touch($webpay_comun_folder.DIRECTORY_SEPARATOR."index.php");
 	}
 	else
 	{
 		log_me("Carpeta común existe. Se revisarán los permisos.");
-		chmod($webpay_comun_folder, 0777); 
+		chmod($webpay_comun_folder, 0700); 
 	}
 
 		
