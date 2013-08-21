@@ -3,7 +3,7 @@
   Plugin Name: Woocommerce Webpay ( Chilean Payment Gateway )
   Description: Sistema de pagos de WooCommerce con WebPay
   Author: Cristian Tala Sánchez
-  Version: 2.1.6
+  Version: 2.1.7
   Author URI: www.cristiantala.cl
   Plugin URI: https://bitbucket.org/ctala/woocommerce-webpay/wiki/Home
   This program is free software: you can redistribute it and/or modify
@@ -416,16 +416,11 @@ function init_woocommerce_webpay() {
             $SUFIJO = "[WEBPAY - FORM]";
 
             $order = &new WC_Order($order_id);
-            $redirect_url = ($this->redirect_page_id == "" || $this->redirect_page_id == 0) ? get_site_url() . "/" : get_permalink($this->redirect_page_id);
+            $redirect_url = get_site_url() ."/?page_id=".($this->redirect_page_id);
             $order_id = $order_id;
+
+		log_me("REDIRECT_URL ".$redirect_url,$SUFIJO);
             $order_key = $order->order_key;
-
-            $permalinkStructure = get_option('permalink_structure');
-
-            if (!empty($permalinkStructure))
-                $queryStr = '?';
-            else
-                $queryStr = '&';
 
 
             $TBK_MONTO = round($order->order_total);
@@ -433,22 +428,7 @@ function init_woocommerce_webpay() {
             $TBK_ID_SESION = date("Ymdhis");
 
             $filename = __FILE__;
-//            if(file_exists($filename)):
-//                if(!is_dir($filename))
-//                {
-//                    mkdir(dirname($filename), 0777);
-//                    chmod(dirname($filename), 0777);
-//                }
-//            endif;
-            //Archivos de datos para uso de pagina de cierre
 
-            //log_me("Entrando a la verificación de carpetas", $SUFIJO);
-            //if (!is_dir(dirname($filename) . "/comun")) {
-            //    mkdir(dirname($filename) . "/comun", 0777);
-            //    chmod(dirname($filename) . "/comun", 0777);
-            //}
-
-            //$myPath = dirname(__FILE__) . "/comun/dato$TBK_ID_SESION.log";
             $myPath = $webpay_comun_folder.DIRECTORY_SEPARATOR."dato$TBK_ID_SESION.log";
 
             log_me("Se utilizará $myPath para guardar los datos", $SUFIJO);
@@ -471,8 +451,8 @@ function init_woocommerce_webpay() {
                 'TBK_MONTO' => $TBK_MONTO,
                 'TBK_ORDEN_COMPRA' => $TBK_ORDEN_COMPRA,
                 'TBK_ID_SESION' => $TBK_ID_SESION,
-                'TBK_URL_EXITO' => $redirect_url . $queryStr . "status=success&order=$order_id&key=$order_key",
-                'TBK_URL_FRACASO' => $redirect_url . $queryStr . "status=failure&order=$order_id&key=$order_key",
+                'TBK_URL_EXITO' => $redirect_url  . "&status=success&order=$order_id&key=$order_key",
+                'TBK_URL_FRACASO' => $redirect_url. "&status=failure&order=$order_id&key=$order_key",
             );
             log_me($ccavenue_args);
             
