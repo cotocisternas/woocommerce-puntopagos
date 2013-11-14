@@ -401,14 +401,14 @@ function init_woocommerce_webpay() {
                                 //$woocommerce->cart->empty_cart();
                             }
                         } else {
-                            $this->msg = 'order already completed.';
+                            $this->msg = 'Esta orden ya ha sido completada.';
                             add_action('the_content', array(&$this, 'thankyouContent'));
                         }
                     } catch (Exception $e) {
-                        // $errorOccurred = true;
-                        $this->msg = "Error occured while processing your request";
+                        
+                        $this->msg = "Ha ocurrido un error procesando el pago.";
                     }
-                    //add_action('the_content', array(&$this, 'thankyouContent'));
+                    add_action('the_content', array(&$this, 'thankyouContent'));
                 }
             } else {
                 log_me("FALTAN PARAMETROS", $SUFIJO);
@@ -418,7 +418,7 @@ function init_woocommerce_webpay() {
 
     
         function thankyouContent($content) {
-            //echo $this->msg;
+            echo $this->msg;
         }
 
         public function xt_compra() {
