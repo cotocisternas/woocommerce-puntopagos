@@ -407,8 +407,9 @@ function init_woocommerce_webpay() {
                     } catch (Exception $e) {
                         
                         $this->msg = "Ha ocurrido un error procesando el pago.";
+                        add_action('the_content', array(&$this, 'thankyouContent'));
                     }
-                    add_action('the_content', array(&$this, 'thankyouContent'));
+                    
                 }
             } else {
                 log_me("FALTAN PARAMETROS", $SUFIJO);
