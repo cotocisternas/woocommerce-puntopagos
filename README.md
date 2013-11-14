@@ -93,6 +93,7 @@ HTML_TR_NORMAL =  http://DIRECCIONDETUPAGINA/?page_id=xt_compra&pay=webpay&wc-ap
 
 ```
 #CHANGELOG
+* V2.1.9 : Se usa el estandar definido por woocommerce para los códigos de estado.
 * V2.1.8 : Arreglada posible duplicidad cuando la orden pasa a on-hold.
 * V2.1.7 : 
 * V2.1.6 : Modificado para que funcionara con versiones más antiguas de php.

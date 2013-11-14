@@ -10,7 +10,7 @@ Requires at least: 3, 3.3+ and WooCommerce 1.6+
 
 Tested up to: 3.6
 
-Stable tag: 2.1.8
+Stable tag: 2.1.9
 
 == Description ==
 
@@ -18,11 +18,34 @@ This plugin enables to pay with webpay plus ( Chile ) in Woocommerce
 
 Wiki Home : https://bitbucket.org/ctala/woocommerce-webpay/wiki/Home
 
+Ya ha sido bastante tiempo en el que me han preguntado por esto en los comentarios y al fin decidí liberar el código de manera OpenSource.
 
+Algunos de ustedes se preguntarán el por qué no cobro por este plugin, tomando en consideración que mucha gente ofrece una buena cantidad por el servicio. Bueno, la respuesta es simple; Creo que junto a la comunidad de desarrolladores podemos mejorar mucho más este código y así todos tener un plugin de una calidad mucho mayor que por la que podríamos pagar ( Suena bien no ? ).
+
+Si quieren ver como implementar este plugin pueden revisar el siguiente post : Como crear un eCommerce en Chile en 5 minutos.
+
+A considerar :
+
+*El Código se distribuye bajo GPLV3.
+*Este código YA es compatible con la última versión de WooCommerce (Version 2.0.12)
+*El código no presenta garantía de ningún tipo.
+*Se puso a disposición un Wiki para la instalación
+*Se puso a disposición un BugTracker para que podamos ver los problemas que vayan saliendo en conjunto.
+*Se asume que ya se hizo la configuración de los CGI para Transbank
+*Si necesitan los CGI de Transbank los pueden descargar de : https://bitbucket.org/ctala/webpayconector. Ya deberían estar listos para usarlos. Con estos parto para generar un eCommerce.
+*Para los que quieren mejorar el código, y nunca han ocupado una herramienta de control de versiones, les recomiendo que lean sobre GIT, además de lo que es un FORK.
 
 
 == Changelog ==
-
+= 2.1.9 =
+Se cambian y estandarizan las recepciones de los status según el manual de woocommerce.
+*Pending – Order received (unpaid)
+*Failed – Payment failed or was declined (unpaid)
+*Processing – Payment received and stock has been reduced- the order is awaiting fulfilment
+*Completed – Order fulfilled and complete – requires no further action
+*On-Hold – Awaiting payment – stock is reduced, but you need to confirm payment
+*Cancelled – Cancelled by an admin or the customer – no further action required
+*Refunded – Refunded by an admin - no further action required
 
 = 2.1.8 =
 Arreglada posible duplicidad cuando la orden pasa a on-hold.

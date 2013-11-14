@@ -3,7 +3,7 @@
   Plugin Name: Woocommerce Webpay ( Chilean Payment Gateway )
   Description: Sistema de pagos de WooCommerce con WebPay
   Author: Cristian Tala Sánchez
-  Version: 2.1.8
+  Version: 2.1.9
   Author URI: www.cristiantala.cl
   Plugin URI: https://bitbucket.org/ctala/woocommerce-webpay/wiki/Home
   This program is free software: you can redistribute it and/or modify
@@ -334,12 +334,9 @@ function init_woocommerce_webpay() {
                         $status = $_REQUEST['status'];
                         if ($order->status !== 'completed') {
                             if ($status == 'success') {
-                                /* $order -> payment_complete();
-                                  $woocommerce -> cart -> empty_cart();
-                                  $order -> update_status('completed'); */
-
-                                // Mark as on-hold (we're awaiting the cheque)
-                                $order->update_status('on-hold');
+                              
+                                // Mark as Processing, we already received the money.
+                                $order->update_status('processing');
 
                                 // Reduce stock levels
                                 $order->reduce_order_stock();
@@ -386,10 +383,7 @@ function init_woocommerce_webpay() {
                                         //'TBK_MAC' => explode("=", $detalle[13]),
                                 );
 
-                                //                                log_me("INICIO INFO PARA AGREGAR A LA DB EN CHECK RESPONSE");
-                                //                                log_me($TBK);  
-                                //                                log_me("FIN INFO PARA AGREGAR A LA DB EN CHECK RESPONSE");
-                                //                                
+                                      
                                 log_me("INSERTANDO EN LA BDD");
                                 woocommerce_payment_complete_add_data_webpay($order_id, $TBK);
                                 log_me("TERMINANDO INSERSIÓN");
@@ -494,15 +488,15 @@ function init_woocommerce_webpay() {
                 die('RECHAZADO');
             } else {
                 log_me("ORDEN EXISTENTE " . $order_id, $sufijo);
-                //CUANDO UNA ORDEN ES PAGADA SE VA A ON HOLD.
+                //CUANDO UNA ORDEN ES PAGADA SE VA A PROCESSING.
 
-                if ($order->status == 'completed'||$order->status == 'on-hold') {
-                    log_me("ORDEN YA PAGADA (COMPLETED) EXISTENTE " . $order_id, "\t" . $sufijo);
+                if ($order->status == 'completed'||$order->status == 'processing'||$order->status == 'refunded'||$order->status == 'canceled') {
+                    log_me("ORDEN YA PAGADA (".$order->status.") EXISTENTE " . $order_id, "\t" . $sufijo);
                     die('RECHAZADO');
                 } else {
 
                     if ($order->status == 'pending' || $order->status == 'failed') {
-                        log_me("ORDEN DE COMPRA NO PAGADA (PENDING). Se procede con el pago de la orden " . $order_id, $sufijo);
+                        log_me("ORDEN DE COMPRA NO PAGADA (".$order->status."). Se procede con el pago de la orden " . $order_id, $sufijo);
                     } else {
                         log_me("ORDEN YA PAGADA (" . $order->status . ") EXISTENTE " . $order_id, "\t" . $sufijo);
                         die('RECHAZADO');
