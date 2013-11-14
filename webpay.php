@@ -496,7 +496,7 @@ function init_woocommerce_webpay() {
                 log_me("ORDEN EXISTENTE " . $order_id, $sufijo);
                 //CUANDO UNA ORDEN ES PAGADA SE VA A ON HOLD.
 
-                if ($order->status == 'completed') {
+                if ($order->status == 'completed'||$order->status == 'on-hold') {
                     log_me("ORDEN YA PAGADA (COMPLETED) EXISTENTE " . $order_id, "\t" . $sufijo);
                     die('RECHAZADO');
                 } else {
