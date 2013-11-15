@@ -12,7 +12,7 @@ if (isset($_REQUEST['status'])):
 
         </h3>Las posibles causas de este rechazo son:</h3>
 
-        <ul>
+        <ul style="margin-left: 10px">
             <li>      Error en el ingreso de los datos de su tarjeta de crédito o Debito (fecha y/o código de seguridad).</li>
             <li>      Su tarjeta de crédito o debito no cuenta con el cupo necesario para cancelar la compra.</li>
             <li>      Tarjeta aún no habilitada en el sistema financiero. </li>
