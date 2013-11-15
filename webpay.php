@@ -27,14 +27,12 @@ include_once 'admin/webpay_debug.php';
  */
 register_activation_hook(__FILE__, 'webpay_install');
 add_action('plugins_loaded', 'init_woocommerce_webpay');
-add_action('muplugins_loaded', 'init_block_direct_webpay');
+
 
 /*
  * Se agrega nuestro Gateway de pago al array que posee WooCommerce
  */
-function init_block_direct_webpay() {
-    die("HOLA");
-}
+
 
 function add_webpay_gateway_class($methods) {
     $methods[] = 'WC_WebPay';
@@ -64,12 +62,14 @@ function init_woocommerce_webpay() {
          * @return void
          */
         public function __construct() {
-            echo "-> ".$_REQUEST['page_id'];
+             
+           
             if (isset($_REQUEST['page_id'])):
+    
                 if ($_REQUEST['page_id'] == 'xt_compra') {
                     add_action('woocommerce_api_' . strtolower(get_class($this)), array($this, 'xt_compra'));
-                } else {
-                    //add_action('init', array(&$this, 'check_webpay_response'));
+                } else{
+                    
                     $this->check_webpay_response();
                 }
             endif;
@@ -533,20 +533,20 @@ function init_woocommerce_webpay() {
                 fwrite($fp, "$key=$val&");
             }
             fclose($fp);
-            //Validaci�n de respuesta de Transbank, solo si es 0 continua con la pagina de cierre
+            //Validación de respuesta de Transbank, solo si es 0 continua con la pagina de cierre
             if ($TBK_RESPUESTA == "0") {
                 $acepta = true;
             } else {
                 $acepta = false;
             }
-            //validaci�n de monto y Orden de compra
+            //validación de monto y Orden de compra
             if ($TBK_MONTO == $monto && $TBK_ORDEN_COMPRA == $ordenCompra && $acepta == true) {
                 $acepta = true;
             } else {
                 $acepta = false;
             }
 
-            //Validaci�n MAC
+            //Validación MAC
             if ($acepta == true) {
                 exec($cmdline, $result, $retint);
                 if ($result [0] == "CORRECTO")
