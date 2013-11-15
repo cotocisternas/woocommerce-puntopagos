@@ -27,10 +27,14 @@ include_once 'admin/webpay_debug.php';
  */
 register_activation_hook(__FILE__, 'webpay_install');
 add_action('plugins_loaded', 'init_woocommerce_webpay');
+add_action('muplugins_loaded', 'init_block_direct_webpay');
 
 /*
  * Se agrega nuestro Gateway de pago al array que posee WooCommerce
  */
+function init_block_direct_webpay() {
+    die("HOLA");
+}
 
 function add_webpay_gateway_class($methods) {
     $methods[] = 'WC_WebPay';
