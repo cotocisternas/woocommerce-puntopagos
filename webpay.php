@@ -60,7 +60,7 @@ function init_woocommerce_webpay() {
          * @return void
          */
         public function __construct() {
-
+            echo "-> ".$_REQUEST['page_id'];
             if (isset($_REQUEST['page_id'])):
                 if ($_REQUEST['page_id'] == 'xt_compra') {
                     add_action('woocommerce_api_' . strtolower(get_class($this)), array($this, 'xt_compra'));
@@ -334,7 +334,7 @@ function init_woocommerce_webpay() {
                         $status = $_REQUEST['status'];
                         if ($order->status !== 'completed') {
                             if ($status == 'success') {
-                              
+                                $woocommerce->cart->empty_cart();
                                 // Mark as Processing, we already received the money.
                                 $order->update_status('processing');
 
