@@ -92,7 +92,7 @@ function webpayThankYou() {
                          * Si este es el caso, se está intentando acceder a la página sin pasar por el ciclo regular.
                          */
                         echo "<h2>No te encuentras autorizado para acceder a esta página</h2>";
-                        exit;
+                        return;
                     }
                 } else {
                     log_me("\t -> El pago de la orden NO fue con WebPay o no se a realizado: $paymentMethod ", $SUFIJO);
@@ -101,7 +101,7 @@ function webpayThankYou() {
                         echo do_shortcode('[woocommerce_thankyou]');
                     } else {
                         echo "Esta orden aún no ha sido pagada o procesada. Por favor vuleve cuando lo hayas hecho.";
-                        exit;
+                       return;
                     }
                 }
             }
@@ -109,7 +109,7 @@ function webpayThankYou() {
             //La orden no existía.
             log_me("ORDEN NO EXISTENTE", $SUFIJO);
             echo "<p>Lamentablemente la orden buscada no existe o no coincide con la información ingresada</p>";
-            exit;
+            return;
         }
     }
     log_me("Saliendo al ThankYouPage", $SUFIJO);
