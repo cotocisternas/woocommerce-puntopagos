@@ -8,7 +8,7 @@ if (isset($_REQUEST['status'])):
         $TBK_ORDEN_COMPRA
                 = $_REQUEST["TBK_ORDEN_COMPRA"];
         ?>
-        <h2>Transacción Fracasada</h2>
+        <h2>Transacción Fracasada - Orden <?=$_REQUEST['order']?></h2>
 
         </h3>Las posibles causas de este rechazo son:</h3>
 
