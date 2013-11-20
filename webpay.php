@@ -65,7 +65,7 @@ function webpayThankYou() {
          * Por lo que solo se puede mostrar si la orden está completada o en proceso Si es que la orden es exitosa.
          * 
          */
-        $order_id = explode('_', $TBK_ORDEN_COMPRA);
+        $order_id = explode('_', $_GET['order']);
         $order_id = (int) $order_id[0];
 
         if (!is_numeric($order_id)) {
