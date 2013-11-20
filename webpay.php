@@ -3,7 +3,7 @@
   Plugin Name: Woocommerce Webpay ( Chilean Payment Gateway )
   Description: Sistema de pagos de WooCommerce con WebPay
   Author: Cristian Tala Sánchez
-  Version: 2.1.9
+  Version: 2.1.9-DEV
   Author URI: www.cristiantala.cl
   Plugin URI: https://bitbucket.org/ctala/woocommerce-webpay/wiki/Home
   This program is free software: you can redistribute it and/or modify
@@ -27,6 +27,93 @@ include_once 'admin/webpay_debug.php';
  */
 register_activation_hook(__FILE__, 'webpay_install');
 add_action('plugins_loaded', 'init_woocommerce_webpay');
+add_shortcode('webpay_thankyou', 'webpayThankYou');
+
+
+
+/*
+ * La siguiente función  hace posible filtrar el acceso a la página de éxito de woocommerce.
+ */
+
+function webpayThankYou() {
+    global $woocommerce;
+    $SUFIJO = "[WEBPAY-THANKYOU]";
+    /*
+     * Revisamos si los parametros necesarios para ver la página existen.
+     * El plugin en general pasa los parametros de id de la orden, la llave y el status.
+     */
+    log_me("Entrando al ThankYouPage", $SUFIJO);
+
+    if (!(isset($_GET['order']) && isset($_GET['status']) && isset($_GET['key']))) {
+        ?>
+        <p><?= "No puedes acceder a esta página de manera directa"; ?></p>
+
+        <?
+        break;
+    } else {
+        /*
+         * Si los parametros existen muestro la información si es que el status no es fallido.
+         * Además de la recepción, se que es fallido cuando NO es pagado.
+         * Para los siguientes status NO puedo mostrar esta página si es que el pago es con webpay.
+         * 
+          - Pending – Order received (unpaid)
+          - Failed – Payment failed or was declined (unpaid)
+          - On-Hold – Awaiting payment – stock is reduced, but you need to confirm payment
+          - Cancelled – Cancelled by an admin or the customer – no further action required
+          - Refunded – Refunded by an admin - no further action required
+         * 
+         * Por lo que solo se puede mostrar si la orden está completada o en proceso Si es que la orden es exitosa.
+         * 
+         */
+        $order_id = explode('_', $_GET['order']);
+        $order_id = (int) $order_id[0];
+
+        if (!is_numeric($order_id)) {
+            echo "<p>Acaba de ocurrir un error tratando de recuperar la información de la orden</p>";
+        }
+        $order = new WC_Order($order_id);
+        if ($order) {
+            log_me("ORDEN EXISTENTE", $SUFIJO);
+            if (in_array($order->status, array('failed'))) {
+                log_me("La orden está fallida, se carga la página de manera normal", $SUFIJO);
+                echo do_shortcode('[woocommerce_thankyou]');
+            } else {
+                /*
+                 * Debo corroborar que la orden este en proceso o completada si el pago es con webpay.
+                 */
+                log_me("La transacción no debería ser fallida, se verifica", $SUFIJO);
+                $paymentMethod = $order->order_custom_fields[_payment_method][0];
+                if ($paymentMethod == "webpay") {
+                    log_me("\t -> El pago de la orden fue con WebPay", $SUFIJO);
+                    if ($order->status == "completed" || $order->status == "processing") {
+                        echo do_shortcode('[woocommerce_thankyou]');
+                    } else {
+                        /*
+                         * Si este es el caso, se está intentando acceder a la página sin pasar por el ciclo regular.
+                         */
+                        echo "<h2>No te encuentras autorizado para acceder a esta página</h2>";
+                        return;
+                    }
+                } else {
+                    log_me("\t -> El pago de la orden NO fue con WebPay o no se a realizado: $paymentMethod ", $SUFIJO);
+
+                    if ($paymentMethod !== null) {
+                        echo do_shortcode('[woocommerce_thankyou]');
+                    } else {
+                        echo "Esta orden aún no ha sido pagada o procesada. Por favor vuleve cuando lo hayas hecho.";
+                        return;
+                    }
+                }
+            }
+        } else {
+            //La orden no existía.
+            log_me("ORDEN NO EXISTENTE", $SUFIJO);
+            echo "<p>Lamentablemente la orden buscada no existe o no coincide con la información ingresada</p>";
+            return;
+        }
+    }
+    log_me("Saliendo al ThankYouPage", $SUFIJO);
+}
 
 /*
  * Se agrega nuestro Gateway de pago al array que posee WooCommerce
@@ -60,12 +147,14 @@ function init_woocommerce_webpay() {
          * @return void
          */
         public function __construct() {
-            echo "-> ".$_REQUEST['page_id'];
+
+
             if (isset($_REQUEST['page_id'])):
+
                 if ($_REQUEST['page_id'] == 'xt_compra') {
                     add_action('woocommerce_api_' . strtolower(get_class($this)), array($this, 'xt_compra'));
                 } else {
-                    //add_action('init', array(&$this, 'check_webpay_response'));
+
                     $this->check_webpay_response();
                 }
             endif;
@@ -89,10 +178,9 @@ function init_woocommerce_webpay() {
 
 // Actions
             add_action('woocommerce_update_options_payment_gateways_' . $this->id, array(&$this, 'process_admin_options'));
-            
+
             add_action('woocommerce_thankyou_webpay', array(&$this, 'thankyousuccess_page'));
             add_action('woocommerce_receipt_webpay', array(&$this, 'receipt_page'));
-
         }
 
         /**
@@ -185,8 +273,6 @@ function init_woocommerce_webpay() {
          * @access public
          * @return void
          */
-      
-
         function thankyousuccess_page() {
             include_once plugin_dir_path(__FILE__) . '/php/thankYouPage.php';
         }
@@ -195,8 +281,6 @@ function init_woocommerce_webpay() {
             echo '<p>' . __('Gracias por tu pedido, por favor haz click a continuación para pagar con webpay', 'woocommerce') . '</p>';
             echo $this->generate_webpay_form($order);
         }
-
-
 
         function process_payment($order_id) {
             $sufijo = "[WEBPAY - PROCESS - PAYMENT]";
@@ -383,7 +467,7 @@ function init_woocommerce_webpay() {
                                         //'TBK_MAC' => explode("=", $detalle[13]),
                                 );
 
-                                      
+
                                 log_me("INSERTANDO EN LA BDD");
                                 woocommerce_payment_complete_add_data_webpay($order_id, $TBK);
                                 log_me("TERMINANDO INSERSIÓN");
@@ -399,11 +483,10 @@ function init_woocommerce_webpay() {
                             add_action('the_content', array(&$this, 'thankyouContent'));
                         }
                     } catch (Exception $e) {
-                        
+
                         $this->msg = "Ha ocurrido un error procesando el pago.";
                         add_action('the_content', array(&$this, 'thankyouContent'));
                     }
-                    
                 }
             } else {
                 log_me("FALTAN PARAMETROS", $SUFIJO);
@@ -411,7 +494,6 @@ function init_woocommerce_webpay() {
             log_me("SALIENDO DEL RESPONSE", $SUFIJO);
         }
 
-    
         function thankyouContent($content) {
             echo $this->msg;
         }
@@ -490,13 +572,13 @@ function init_woocommerce_webpay() {
                 log_me("ORDEN EXISTENTE " . $order_id, $sufijo);
                 //CUANDO UNA ORDEN ES PAGADA SE VA A PROCESSING.
 
-                if ($order->status == 'completed'||$order->status == 'processing'||$order->status == 'refunded'||$order->status == 'canceled') {
-                    log_me("ORDEN YA PAGADA (".$order->status.") EXISTENTE " . $order_id, "\t" . $sufijo);
+                if ($order->status == 'completed' || $order->status == 'processing' || $order->status == 'refunded' || $order->status == 'canceled') {
+                    log_me("ORDEN YA PAGADA (" . $order->status . ") EXISTENTE " . $order_id, "\t" . $sufijo);
                     die('RECHAZADO');
                 } else {
 
                     if ($order->status == 'pending' || $order->status == 'failed') {
-                        log_me("ORDEN DE COMPRA NO PAGADA (".$order->status."). Se procede con el pago de la orden " . $order_id, $sufijo);
+                        log_me("ORDEN DE COMPRA NO PAGADA (" . $order->status . "). Se procede con el pago de la orden " . $order_id, $sufijo);
                     } else {
                         log_me("ORDEN YA PAGADA (" . $order->status . ") EXISTENTE " . $order_id, "\t" . $sufijo);
                         die('RECHAZADO');
@@ -529,20 +611,20 @@ function init_woocommerce_webpay() {
                 fwrite($fp, "$key=$val&");
             }
             fclose($fp);
-            //Validaci�n de respuesta de Transbank, solo si es 0 continua con la pagina de cierre
+            //Validación de respuesta de Transbank, solo si es 0 continua con la pagina de cierre
             if ($TBK_RESPUESTA == "0") {
                 $acepta = true;
             } else {
                 $acepta = false;
             }
-            //validaci�n de monto y Orden de compra
+            //validación de monto y Orden de compra
             if ($TBK_MONTO == $monto && $TBK_ORDEN_COMPRA == $ordenCompra && $acepta == true) {
                 $acepta = true;
             } else {
                 $acepta = false;
             }
 
-            //Validaci�n MAC
+            //Validación MAC
             if ($acepta == true) {
                 exec($cmdline, $result, $retint);
                 if ($result [0] == "CORRECTO")
@@ -552,52 +634,52 @@ function init_woocommerce_webpay() {
             }
             ?>
             <html>
-            <?php
-            if ($acepta == true) {
-                ?>
+                <?php
+                if ($acepta == true) {
+                    ?>
                     ACEPTADO
-            <?php } else { ?>
+                <?php } else { ?>
                     RECHAZADO
-            <?php } exit; ?>
+                <?php } exit; ?>
             </html>
 
-                <?php
-                log_me("FINALIZANDO XT_COMPRA", $sufijo);
-            }
-
+            <?php
+            log_me("FINALIZANDO XT_COMPRA", $sufijo);
         }
 
-        //End of the GateWay Class
-
-        function woocommerce_payment_complete_add_data_webpay($order_id, $TBK) {
-            global $webpay_table_name;
-            global $wpdb;
-
-            $order = new WC_Order($order_id);
-            $order->add_order_note("Pago Completado. Transacción : " . $TBK['TBK_CODIGO_AUTORIZACION'][1]);
-
-            log_me("idOrden : ");
-            log_me($order_id);
-            log_me('TBK:');
-            log_me($TBK);
-            $rows_affected = $wpdb->insert($webpay_table_name, array(
-                'idOrder' => $order_id,
-                'TBK_ORDEN_COMPRA' => $TBK['TBK_ORDEN_COMPRA'][1],
-                'TBK_TIPO_TRANSACCION' => $TBK['TBK_TIPO_TRANSACCION'][1],
-                'TBK_RESPUESTA' => $TBK['TBK_RESPUESTA'][1],
-                'TBK_MONTO' => $TBK['TBK_MONTO'][1],
-                'TBK_CODIGO_AUTORIZACION' => $TBK['TBK_CODIGO_AUTORIZACION'][1],
-                'TBK_FINAL_NUMERO_TARJETA' => $TBK['TBK_FINAL_NUMERO_TARJETA'][1],
-                'TBK_FECHA_CONTABLE' => $TBK['TBK_FECHA_CONTABLE'][1],
-                'TBK_FECHA_TRANSACCION' => $TBK['TBK_FECHA_TRANSACCION'][1],
-                'TBK_HORA_TRANSACCION' => $TBK['TBK_HORA_TRANSACCION'][1],
-                'TBK_ID_TRANSACCION' => $TBK['TBK_ID_TRANSACCION'][1],
-                'TBK_TIPO_PAGO' => $TBK['TBK_TIPO_PAGO'][1],
-                'TBK_NUMERO_CUOTAS' => $TBK['TBK_NUMERO_CUOTAS'][1],
-                    )
-            );
-        }
-
-        add_action('woocommerce_payment_complete', 'woocommerce_payment_complete_add_data_webpay', 10, 1);
     }
-    ?>
+
+    //End of the GateWay Class
+
+    function woocommerce_payment_complete_add_data_webpay($order_id, $TBK) {
+        global $webpay_table_name;
+        global $wpdb;
+
+        $order = new WC_Order($order_id);
+        $order->add_order_note("Pago Completado. Transacción : " . $TBK['TBK_CODIGO_AUTORIZACION'][1]);
+
+        log_me("idOrden : ");
+        log_me($order_id);
+        log_me('TBK:');
+        log_me($TBK);
+        $rows_affected = $wpdb->insert($webpay_table_name, array(
+            'idOrder' => $order_id,
+            'TBK_ORDEN_COMPRA' => $TBK['TBK_ORDEN_COMPRA'][1],
+            'TBK_TIPO_TRANSACCION' => $TBK['TBK_TIPO_TRANSACCION'][1],
+            'TBK_RESPUESTA' => $TBK['TBK_RESPUESTA'][1],
+            'TBK_MONTO' => $TBK['TBK_MONTO'][1],
+            'TBK_CODIGO_AUTORIZACION' => $TBK['TBK_CODIGO_AUTORIZACION'][1],
+            'TBK_FINAL_NUMERO_TARJETA' => $TBK['TBK_FINAL_NUMERO_TARJETA'][1],
+            'TBK_FECHA_CONTABLE' => $TBK['TBK_FECHA_CONTABLE'][1],
+            'TBK_FECHA_TRANSACCION' => $TBK['TBK_FECHA_TRANSACCION'][1],
+            'TBK_HORA_TRANSACCION' => $TBK['TBK_HORA_TRANSACCION'][1],
+            'TBK_ID_TRANSACCION' => $TBK['TBK_ID_TRANSACCION'][1],
+            'TBK_TIPO_PAGO' => $TBK['TBK_TIPO_PAGO'][1],
+            'TBK_NUMERO_CUOTAS' => $TBK['TBK_NUMERO_CUOTAS'][1],
+                )
+        );
+    }
+
+    add_action('woocommerce_payment_complete', 'woocommerce_payment_complete_add_data_webpay', 10, 1);
+}
+?>
