@@ -42,7 +42,7 @@ function webpayThankYou() {
      * Revisamos si los parametros necesarios para ver la página existen.
      * El plugin en general pasa los parametros de id de la orden, la llave y el status.
      */
-    log_me("Entrando al ThankYouPage",$SUFIJO);
+    log_me("Entrando al ThankYouPage", $SUFIJO);
 
     if (!(isset($_GET['order']) && isset($_GET['status']) && isset($_GET['key']))) {
         ?>
@@ -65,20 +65,26 @@ function webpayThankYou() {
          * Por lo que solo se puede mostrar si la orden está completada o en proceso Si es que la orden es exitosa.
          * 
          */
+        $order_id = explode('_', $TBK_ORDEN_COMPRA);
+        $order_id = (int) $order_id[0];
 
-        if ($order) :
-
+        if (!is_numeric($order_id)) {
+            echo "<p>Acaba de ocurrir un error tratando de recuperar la información de la orden</p>";
+        }
+        $order = new WC_Order($order_id);
+        if ($order) {
+            log_me("ORDEN EXISTENTE", $SUFIJO);
             if (in_array($order->status, array('failed'))) {
-                log_me("La orden está fallida, se carga la página de manera normal",$SUFIJO);
+                log_me("La orden está fallida, se carga la página de manera normal", $SUFIJO);
                 echo do_shortcode('[woocommerce_thankyou]');
             } else {
                 /*
                  * Debo corroborar que la orden este en proceso o completada si el pago es con webpay.
                  */
-                log_me("La transacción no debería ser fallida, se verifica",$SUFIJO);
+                log_me("La transacción no debería ser fallida, se verifica", $SUFIJO);
                 $paymentMethod = $order->order_custom_fields[_payment_method][0];
                 if ($paymentMethod == "webpay") {
-                    log_me("\t -> El pago de la orden fue con WebPay",$SUFIJO);
+                    log_me("\t -> El pago de la orden fue con WebPay", $SUFIJO);
                     if ($order->status == "completed" || $order->status == "processing") {
                         echo do_shortcode('[woocommerce_thankyou]');
                     } else {
@@ -88,16 +94,22 @@ function webpayThankYou() {
                         echo "<h2>No te encuentras autorizado para acceder a esta página</h2>";
                     }
                 } else {
-                    log_me("\t -> El pago de la orden NO fue con WebPay : $paymentMethod ",$SUFIJO);
+                    log_me("\t -> El pago de la orden NO fue con WebPay : $paymentMethod ", $SUFIJO);
                     echo do_shortcode('[woocommerce_thankyou]');
                 }
             }
 
 
 
-        endif;
+        }
+        else
+        {
+            //La orden no existía.
+            log_me("ORDEN NO EXISTENTE", $SUFIJO);
+            echo "<p>Lamentablemente la orden buscada no existe o no coincide con la información ingresada</p>";
+        }
     }
-    log_me("Saliendo al ThankYouPage",$SUFIJO);
+    log_me("Saliendo al ThankYouPage", $SUFIJO);
 }
 
 /*
@@ -625,7 +637,7 @@ function init_woocommerce_webpay() {
                     ACEPTADO
                 <?php } else { ?>
                     RECHAZADO
-            <?php } exit; ?>
+                <?php } exit; ?>
             </html>
 
             <?php
