@@ -37,11 +37,12 @@ add_shortcode('webpay_thankyou', 'webpayThankYou');
 
 function webpayThankYou() {
     global $woocommerce;
+    $SUFIJO = "[WEBPAY-THANKYOU]";
     /*
      * Revisamos si los parametros necesarios para ver la página existen.
      * El plugin en general pasa los parametros de id de la orden, la llave y el status.
      */
-
+    log_me("Entrando al ThankYouPage",$SUFIJO);
 
     if (!(isset($_GET['order']) && isset($_GET['status']) && isset($_GET['key']))) {
         ?>
@@ -68,13 +69,16 @@ function webpayThankYou() {
         if ($order) :
 
             if (in_array($order->status, array('failed'))) {
+                log_me("La orden está fallida, se carga la página de manera normal",$SUFIJO);
                 echo do_shortcode('[woocommerce_thankyou]');
             } else {
                 /*
                  * Debo corroborar que la orden este en proceso o completada si el pago es con webpay.
                  */
+                log_me("La transacción no debería ser fallida, se verifica",$SUFIJO);
                 $paymentMethod = $order->order_custom_fields[_payment_method][0];
                 if ($paymentMethod == "webpay") {
+                    log_me("\t -> El pago de la orden fue con WebPay",$SUFIJO);
                     if ($order->status == "completed" || $order->status == "processing") {
                         echo do_shortcode('[woocommerce_thankyou]');
                     } else {
@@ -84,6 +88,7 @@ function webpayThankYou() {
                         echo "<h2>No te encuentras autorizado para acceder a esta página</h2>";
                     }
                 } else {
+                    log_me("\t -> El pago de la orden NO fue con WebPay : $paymentMethod ",$SUFIJO);
                     echo do_shortcode('[woocommerce_thankyou]');
                 }
             }
@@ -92,6 +97,7 @@ function webpayThankYou() {
 
         endif;
     }
+    log_me("Saliendo al ThankYouPage",$SUFIJO);
 }
 
 /*
