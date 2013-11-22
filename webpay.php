@@ -87,6 +87,7 @@ function webpayThankYou() {
                     log_me("\t -> El pago de la orden fue con WebPay", $SUFIJO);
                     if ($order->status == "completed" || $order->status == "processing") {
                         echo do_shortcode('[woocommerce_thankyou]');
+                        echo "<p>Recuerda que tus productos serán enviados por correo a tu domicilio si es que seleccionaste este medio de despacho y deberían estar entre 2 y 3 días hábiles a tu hogar.</p>";
                     } else {
                         /*
                          * Si este es el caso, se está intentando acceder a la página sin pasar por el ciclo regular.
