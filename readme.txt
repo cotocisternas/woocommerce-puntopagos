@@ -10,7 +10,7 @@ Requires at least: 3, 3.3+ and WooCommerce 1.6+
 
 Tested up to: 3.6
 
-Stable tag: 2.2
+Stable tag: 2.3
 
 == Description ==
 
@@ -37,6 +37,16 @@ A considerar :
 Recuerden cambiar el shortcode de [woocommerce-thankyou] por [webpay-thankyou] cuando corresponda.
 
 == Changelog ==
+
+
+= 2.3 =
+
+Se agregan los templates para los pagos con webpay.
+- Template para la página de Agradecimientos
+- Template para la página de detalles de la orden
+
+Esto se hizo debido a que Transbank pide información que antes no pedía en la página de éxito.
+
 
 = 2.2 =
 
