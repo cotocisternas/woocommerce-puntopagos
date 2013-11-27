@@ -31,6 +31,8 @@ add_shortcode('webpay_thankyou', 'webpayThankYou');
 
 
 
+
+
 /*
  * La siguiente función  hace posible filtrar el acceso a la página de éxito de woocommerce.
  */
@@ -86,7 +88,10 @@ function webpayThankYou() {
                 if ($paymentMethod == "webpay") {
                     log_me("\t -> El pago de la orden fue con WebPay", $SUFIJO);
                     if ($order->status == "completed" || $order->status == "processing") {
-                        echo do_shortcode('[woocommerce_thankyou]');
+                        /*
+                         * Se carga el template del plugin para la página de éxito solo si es una compra con webpay
+                         */
+                        include_once plugin_dir_path(__FILE__) . '/php/templates/thankyou.php';
                         echo "<p>Recuerda que tus productos serán enviados por correo a tu domicilio si es que seleccionaste este medio de despacho y deberían estar entre 2 y 3 días hábiles a tu hogar.</p>";
                     } else {
                         /*

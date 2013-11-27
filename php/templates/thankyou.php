@@ -2,57 +2,23 @@
 /**
  * Thankyou page
  *
- * @author 		WooThemes
+ * @author 		Cristian Tala Sánchez
+ * @url                 http://www.cristiantala.cl
  * @package 	WooCommerce/Templates
  * @version     2.0.0
+ * Está versión está basada en el Order Details de Woocommerce e incluye las modificaciones
+ * necesarias para pasar la certificación de transbank.
  */
 
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 global $woocommerce;
-//echo "TEMP";
-
-if(!(isset($_GET['order'])&&isset($_GET['status'])&&isset($_GET['key'])))
-{
-
-	?>
-		<p><?="No puedes acceder a esta página de manera directa"; ?></p>
-		
-	<?
-		exit;
-
-}
 
 if ( $order ) : ?>
 
 	<?php if ( in_array( $order->status, array( 'failed' ) ) ) : ?>
 
 		<p><?php _e( 'Unfortunately your order cannot be processed as the originating bank/merchant has declined your transaction.', 'woocommerce' ); ?></p>
-
-<pre>
-</pre>
-<p>
-<?php
-
-	$paymentMethod=$order->order_custom_fields[_payment_method][0];
-	if($paymentMethod=="webpay"):
-?>
-<h3>Transacción Fracasada</h3>
- 
-</h4>Las posibles causas de este rechazo son:</h4>
-
-<ul>
-<li>      Error en el ingreso de los datos de su tarjeta de crédito o Debito (fecha y/o código de seguridad).</li>
-<li>      Su tarjeta de crédito o debito no cuenta con el cupo necesario para cancelar la compra.</li>
-<li>      Tarjeta aún no habilitada en el sistema financiero. </li>
-<li>      Si el problema persiste favor comunicarse con su Banco emisor. </li>
-</ul>
-
-</p>
-
-<?
-	endif;
-?>
 
 		<p><?php
 			if ( is_user_logged_in() )
@@ -93,9 +59,7 @@ if ( $order ) : ?>
 			<?php endif; ?>
 		</ul>
 		<div class="clear"></div>
-		<p>
-		“En caso de requerir devoluciones o reembolsos debido a un defecto en el producto favor de contactarse al correo pandora@pandora.cl”.
-		</p>
+
 	<?php endif; ?>
 
 	<?php do_action( 'woocommerce_thankyou_' . $order->payment_method, $order->id ); ?>
