@@ -91,7 +91,7 @@ function webpayThankYou() {
                         /*
                          * Se carga el template del plugin para la página de éxito solo si es una compra con webpay
                          */
-                        echo "WEBPAY PAYMENT";
+//                        echo "WEBPAY PAYMENT";
                         include_once plugin_dir_path(__FILE__) . '/php/templates/thankyou.php';
                         echo "<p>Recuerda que tus productos serán enviados por correo a tu domicilio si es que seleccionaste este medio de despacho y deberían estar entre 2 y 3 días hábiles a tu hogar.</p>";
                     } else {

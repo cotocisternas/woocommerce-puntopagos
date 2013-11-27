@@ -63,7 +63,7 @@ if ( $order ) : ?>
 	<?php endif; ?>
 
 	<?php do_action( 'woocommerce_thankyou_' . $order->payment_method, $order->id ); ?>
-	<?php do_action( 'woocommerce_thankyou', $order->id ); ?>
+	<?php //do_action( 'woocommerce_thankyou', $order->id ); ?>
 
 <?php else : ?>
 
