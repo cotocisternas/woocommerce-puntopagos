@@ -93,8 +93,11 @@ function webpayThankYou() {
                          */
 //                        echo "WEBPAY PAYMENT";
                         include_once plugin_dir_path(__FILE__) . '/php/templates/thankyou.php';
+                        /*
+                         * Se incluyen los detalles de la orden incluyendo el precio unitario según es requerido por transbank
+                         */
                         include_once plugin_dir_path(__FILE__) . '/php/templates/order-details.php';
-                        echo "<p>Recuerda que tus productos serán enviados por correo a tu domicilio si es que seleccionaste este medio de despacho y deberían estar entre 2 y 3 días hábiles a tu hogar.</p>";
+                        echo "<br><p>Recuerda que tus productos serán enviados por correo a tu domicilio si es que seleccionaste este medio de despacho y deberían estar entre 2 y 3 días hábiles a tu hogar.</p>";
                     } else {
                         /*
                          * Si este es el caso, se está intentando acceder a la página sin pasar por el ciclo regular.
