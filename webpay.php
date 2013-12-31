@@ -3,6 +3,7 @@
   Plugin Name: Woocommerce Webpay ( Chilean Payment Gateway )
   Description: Sistema de pagos de WooCommerce con WebPay
   Author: Cristian Tala Sánchez
+  Fork: Felipe Egas
   Version: 2.3
   Author URI: www.cristiantala.cl
   Plugin URI: https://bitbucket.org/ctala/woocommerce-webpay/wiki/Home
@@ -20,8 +21,6 @@
  */
   include_once 'admin/webpay_install.php';
   include_once 'admin/webpay_debug.php';
-  //include 'ChromePhp.php';
-  //require_once('FirePHPCore/lib/FirePHPCore/FirePHP.class.php');
   
 /*
  * Este activation Hook crea una tabla en la base de datos para mantener el registro
@@ -41,18 +40,6 @@ add_shortcode('webpay_thankyou', 'webpayThankYou');
 
 function webpayThankYou() {
 
- /* ob_start();
-
-  $firephp = FirePHP::getInstance(true);
-
-
-
-  $firephp->log($_SERVER, 'var servidor:');*/
-
-
- /*ChromePhp::log('referer:');
- ChromePhp::log($_SERVER);
- ChromePhp::log('Hello console!');*/
  global $woocommerce;
  $SUFIJO = "[WEBPAY-THANKYOU]";
     /*
@@ -104,9 +91,7 @@ function webpayThankYou() {
                 $paymentMethod = $order->order_custom_fields[_payment_method][0];
                 if ($paymentMethod == "webpay") {
                   log_me("\t -> El pago de la orden fue con WebPay", $SUFIJO);
-                  //ChromePhp::log('referer: '.$_SERVER['HTTP_REFERER']);
-
-                  /*ChromePhp::log('status de la orden: '.$order->status);*/
+                  
 
                   if ($order->status == "completed" || $order->status == "processing") {
                         /*
@@ -433,7 +418,7 @@ function get_pages($title = false, $indent = true) {
         function check_webpay_response() {
 
 
-          /*ChromePhp::log('entrando al response');*/
+         
           global $woocommerce;
           global $webpay_comun_folder;
           $SUFIJO = "[WEBPAY - RESPONSE]";
@@ -449,24 +434,24 @@ function get_pages($title = false, $indent = true) {
             if ($order_id != '') {
               try {
                 $order = new WC_Order($order_id);
-                /*ChromePhp::log('status de la orden en el check response: '.$order->status);
-                ChromePhp::log('referer: '.$_SERVER['HTTP_REFERER']);*/
+                
                 $status = $_REQUEST['status'];
                 if ($order->status !== 'completed'){
 
-                               //RESCATO EL ARCHIVO
-                  $TBK_ID_SESION
-                  = $_POST["TBK_ID_SESION"];
-                  $TBK_ORDEN_COMPRA
-                  = $_POST["TBK_ORDEN_COMPRA"];
 
-                  /*                                 * **************** CONFIGURAR AQUI ****************** */
+                  /**
+                   * aquí es donde se hace la validación para la inyección.
+                   * 
+                   */
+                  //RESCATO EL ARCHIVO
+                  $TBK_ID_SESION = $_POST["TBK_ID_SESION"];
+                  $TBK_ORDEN_COMPRA = $_POST["TBK_ORDEN_COMPRA"];
 
-
-                                //Archivo previamente generado para rescatar la información.
+                  
+                  //Archivo previamente generado para rescatar la información.
                   $myPath = $webpay_comun_folder . DIRECTORY_SEPARATOR . "MAC01Normal$TBK_ID_SESION.txt";
-                  /*                                 * **************** FIN CONFIGURACION **************** */
-                                //Rescate de los valores informados por transbank
+                                                 
+                  //Rescate de los valores informados por transbank
                   $fic = fopen($myPath, "r");
                   $linea = fgets($fic);
                   fclose($fic);
@@ -488,7 +473,12 @@ function get_pages($title = false, $indent = true) {
                                         //'TBK_MAC' => explode("=", $detalle[13]),
                     );
 
-
+                  /**
+                   * si es una inyección, o sea que no pasa primero por el xt_compra, no se genera archivo
+                   * "MAC" entonces siempre los valores darán cero, ademas de ver si el estado es "success"
+                   * preguntamos si el en el archivo rescatado existe la orden de compra si es asi pasamos a la pagina de exito
+                   * 
+                   */
                   if ($status == 'success' &&  $TBK['TBK_ORDEN_COMPRA'][1]==$TBK_ORDEN_COMPRA) {
                     $woocommerce->cart->empty_cart();
                                 // Mark as Processing, we already received the money.
@@ -513,6 +503,12 @@ function get_pages($title = false, $indent = true) {
                     log_me("INSERTANDO EN LA BDD");
                     woocommerce_payment_complete_add_data_webpay($order_id, $TBK);
                     log_me("TERMINANDO INSERSIÓN");
+
+                    /**
+                     * en cambio si el status es "failure" o en el archivo MAC no existe la orden de compra, redirigimos a la pagina
+                     * de fracaso
+                     * 
+                     */
                   } elseif ($status == 'failure' || $TBK['TBK_ORDEN_COMPRA'][1]!=$TBK_ORDEN_COMPRA) {
                     $order->update_status('failed');
                     $order->add_order_note('Failed');
@@ -598,6 +594,9 @@ function get_pages($title = false, $indent = true) {
           if (!is_numeric($order_id))
             die('RECHAZADO');
 
+          /**
+           * transbank pide que se de "ACEPTADO" si la respuesta está entre -8 y -1
+           */
           if ($TBK_RESPUESTA >=-8 && $TBK_RESPUESTA <=-1)
             die("ACEPTADO");
 
@@ -660,8 +659,14 @@ function get_pages($title = false, $indent = true) {
             $acepta = false;
           }
             //validación de monto y Orden de compra
+            //
+            //
           if ($TBK_MONTO == $monto && $TBK_ORDEN_COMPRA == $ordenCompra && $acepta == true) {
 
+            /**
+             * validamos que la orden de compra no esté repetida preguntando a la base de datos.
+             * 
+             */
             $res=$wpdb->get_row("SELECT count(*) as total FROM ".$webpay_table_name." WHERE idOrder = ".$TBK_ORDEN_COMPRA, ARRAY_A);
 
 
