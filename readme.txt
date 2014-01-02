@@ -26,7 +26,7 @@ Algunos de ustedes se preguntarán el por qué no cobro por este plugin, tomando
 A considerar :
 
 *El Código se distribuye bajo GPLV3.
-*Este código YA es compatible con la última versión de WooCommerce (Version 2.0.12)
+*Este código YA es compatible con la última versión de WooCommerce (Version > 2.0.12)
 *El código no presenta garantía de ningún tipo.
 *Se puso a disposición un Wiki para la instalación
 *Se puso a disposición un BugTracker para que podamos ver los problemas que vayan saliendo en conjunto.
@@ -38,6 +38,17 @@ Recuerden cambiar el shortcode de [woocommerce-thankyou] por [webpay-thankyou] c
 
 == Changelog ==
 
+
+
+= 2.3.2 =
+
+Se valida que la página de éxito venga de un POST.
+Se arregla problema de validación del KEY
+
+
+= 2.3.1 =
+
+Merge con el código de Felipe Egas
 
 = 2.3 =
 

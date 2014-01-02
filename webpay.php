@@ -3,8 +3,8 @@
   Plugin Name: Woocommerce Webpay ( Chilean Payment Gateway )
   Description: Sistema de pagos de WooCommerce con WebPay
   Author: Cristian Tala Sánchez
-  Fork: Felipe Egas
-  Version: 2.3
+  Contribuidores: Felipe Egas
+  Version: 2.3.2
   Author URI: www.cristiantala.cl
   Plugin URI: https://bitbucket.org/ctala/woocommerce-webpay/wiki/Home
   This program is free software: you can redistribute it and/or modify
@@ -42,13 +42,25 @@ function webpayThankYou() {
 
  global $woocommerce;
  $SUFIJO = "[WEBPAY-THANKYOU]";
+    log_me("Entrando al ThankYouPage", $SUFIJO);
+	/*
+		Reviso si al menos tengo los parametros post pasados por la respuesta de transbank.
+		Los parametros retornados por post son los siguientes:
+		[TBK_ID_SESION]
+		[TBK_ORDEN_COMPRA]
+	*/
+
+    if (!(isset($_POST['TBK_ID_SESION']) && isset($_POST['TBK_ORDEN_COMPRA']) )) {
+		//Esto significa que no viene del método POST
+		 log_me("Método POST invalido", $SUFIJO);
+		echo "<p>No puedes acceder a esta página de manera directa.</p>";		
+		return;	
+	}
+	
     /*
      * Revisamos si los parametros necesarios para ver la página existen.
      * El plugin en general pasa los parametros de id de la orden, la llave y el status.
      */
-    log_me("Entrando al ThankYouPage", $SUFIJO);
-
-
 
     if (!(isset($_GET['order']) && isset($_GET['status']) && isset($_GET['key']))) {
       ?>
@@ -80,6 +92,14 @@ function webpayThankYou() {
           $order = new WC_Order($order_id);
           if ($order) {
             log_me("ORDEN EXISTENTE", $SUFIJO);
+		//Reviso el key de la orden.
+		$esValida = $order->key_is_valid($_GET['key']);
+		if(!$esValida)
+			{	
+				log_me("KEY INGRESADA NO VALIDA", $SUFIJO);
+				echo "<p>Acaba de ocurrir un error tratando de recuperar la información de la orden</p>";
+				return;
+			}
             if (in_array($order->status, array('failed'))) {
               log_me("La orden está fallida, se carga la página de manera normal", $SUFIJO);
               echo do_shortcode('[woocommerce_thankyou]');
