@@ -38,7 +38,9 @@ Recuerden cambiar el shortcode de [woocommerce-thankyou] por [webpay-thankyou] c
 
 == Changelog ==
 
+= 2.4 = 
 
+Versión Certificada
 
 = 2.3.2 =
 

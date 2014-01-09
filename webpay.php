@@ -4,7 +4,7 @@
   Description: Sistema de pagos de WooCommerce con WebPay
   Author: Cristian Tala Sánchez
   Contribuidores: Felipe Egas
-  Version: 2.3.2
+  Version: 2.4
   Author URI: www.cristiantala.cl
   Plugin URI: https://bitbucket.org/ctala/woocommerce-webpay/wiki/Home
   This program is free software: you can redistribute it and/or modify
@@ -32,15 +32,22 @@ add_shortcode('webpay_thankyou', 'webpayThankYou');
 
 
 
+/*
+Variables globales usadas por el plugin
+*/
 
+add_action( 'wp', 'beforeTodo' );
+
+function beforeTodo()
+{
+}
 
 /*
  * La siguiente función  hace posible filtrar el acceso a la página de éxito de woocommerce.
  */
 
 function webpayThankYou() {
-
- global $woocommerce;
+global $woocommerce;
  $SUFIJO = "[WEBPAY-THANKYOU]";
     log_me("Entrando al ThankYouPage", $SUFIJO);
 	/*
@@ -90,6 +97,7 @@ function webpayThankYou() {
             echo "<p>Acaba de ocurrir un error tratando de recuperar la información de la orden</p>";
           }
           $order = new WC_Order($order_id);
+
           if ($order) {
             log_me("ORDEN EXISTENTE", $SUFIJO);
 		//Reviso el key de la orden.
@@ -184,9 +192,9 @@ function init_woocommerce_webpay() {
          * @return void
          */
         public function __construct() {
-
-
           if (isset($_REQUEST['page_id'])):
+		
+
 
             if ($_REQUEST['page_id'] == 'xt_compra') {
               add_action('woocommerce_api_' . strtolower(get_class($this)), array($this, 'xt_compra'));
@@ -195,6 +203,7 @@ function init_woocommerce_webpay() {
               $this->check_webpay_response();
             }
             endif;
+	
             $this->id = 'webpay';
             $this->has_fields = false;
             $this->icon = WP_PLUGIN_URL . "/" . plugin_basename(dirname(__FILE__)) . '/images/logo.png';
@@ -212,7 +221,39 @@ function init_woocommerce_webpay() {
 
 
             $this->redirect_page_id = $this->settings['redirect_page_id'];
+		$permalink_actual = get_permalink( );
+		$permalink_por_id = get_permalink($this->redirect_page_id);
+		
+		
+	   if ($_REQUEST['page_id'] == $this->redirect_page_id || $permalink_actual==$permalink_por_id) {
+			//Si la página es la de éxito, verifico si la orden está pagada o procesando. Si no termino
+		 $order_id = explode('_', $_GET['order']);
+          	 $order_id = (int) $order_id[0];
 
+                 if (!is_numeric($order_id)) {
+            		wp_redirect( home_url() ); exit;
+          		}
+          	 $order = new WC_Order($order_id);
+
+		if($order)
+			{
+				//die("ACEPTADO");
+				//Si la orden no está pagada, y trato de ver la página de éxito, rechazo.
+				if(!($_REQUEST['status']=="failure"))
+					{
+						if(!($order->status=="processing"||$order->status=="complete"))
+						{
+							wp_redirect( home_url() ); exit;
+						}
+					}
+		
+			}
+			else
+			{
+				wp_redirect( home_url() ); exit;
+			}
+	}
+		//echo $this->redirect_page_id ;
 // Actions
             add_action('woocommerce_update_options_payment_gateways_' . $this->id, array(&$this, 'process_admin_options'));
 
