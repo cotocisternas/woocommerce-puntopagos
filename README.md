@@ -95,6 +95,7 @@ HTML_TR_NORMAL =  http://DIRECCIONDETUPAGINA/?page_id=xt_compra&pay=webpay&wc-ap
 
 ```
 #CHANGELOG
+* V2.4.1 : Arreglada la redirección con algunas versiones de php, en especial para hostgator.
 * V2.4 : Versión Certificada. Ahora no se deberían requerir modificaciones para pasar las certificaciones de transbank.
 * V2.3 : Se agregan los templates para los pagos con webpay.
 * V2.2 : Se establece el short-code [webpay-thankyou] para realizar las validaciones necesarias por parte de transbank. Es necesario cambiar en la página de recepción del pedido por [woocommerce-thankyou]. 

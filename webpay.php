@@ -4,7 +4,7 @@
   Description: Sistema de pagos de WooCommerce con WebPay
   Author: Cristian Tala Sánchez
   Contribuidores: Felipe Egas
-  Version: 2.4
+  Version: 2.4.1
   Author URI: www.cristiantala.cl
   Plugin URI: https://bitbucket.org/ctala/woocommerce-webpay/wiki/Home
   This program is free software: you can redistribute it and/or modify
@@ -32,15 +32,6 @@ add_shortcode('webpay_thankyou', 'webpayThankYou');
 
 
 
-/*
-Variables globales usadas por el plugin
-*/
-
-add_action( 'wp', 'beforeTodo' );
-
-function beforeTodo()
-{
-}
 
 /*
  * La siguiente función  hace posible filtrar el acceso a la página de éxito de woocommerce.
@@ -224,7 +215,7 @@ function init_woocommerce_webpay() {
 		$permalink_actual = get_permalink( );
 		$permalink_por_id = get_permalink($this->redirect_page_id);
 		
-		
+	if(isset($_REQUEST['page_id'])):		
 	   if ($_REQUEST['page_id'] == $this->redirect_page_id || $permalink_actual==$permalink_por_id) {
 			//Si la página es la de éxito, verifico si la orden está pagada o procesando. Si no termino
 		 $order_id = explode('_', $_GET['order']);
@@ -253,6 +244,7 @@ function init_woocommerce_webpay() {
 				wp_redirect( home_url() ); exit;
 			}
 	}
+	endif;
 		//echo $this->redirect_page_id ;
 // Actions
             add_action('woocommerce_update_options_payment_gateways_' . $this->id, array(&$this, 'process_admin_options'));
