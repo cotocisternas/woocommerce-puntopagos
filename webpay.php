@@ -39,7 +39,7 @@ add_shortcode('webpay_thankyou', 'webpayThankYou');
 
 function webpayThankYou() {
 global $woocommerce;
- $SUFIJO = "[WEBPAY-THANKYOU]";
+ $SUFIJO = "[PuntoPagos-THANKYOU]";
     log_me("Entrando al ThankYouPage", $SUFIJO);
 	/*
 		Reviso si al menos tengo los parametros post pasados por la respuesta de transbank.
@@ -265,7 +265,7 @@ function init_woocommerce_webpay() {
             'enabled' => array(
               'title' => __('Enable/Disable', 'woocommerce'),
               'type' => 'checkbox',
-              'label' => __('Habilita Woocommerce Webpay Plus', 'woocommerce'),
+              'label' => __('Habilita Woocommerce Webpay Plus + PuntoPagos', 'woocommerce'),
               'default' => 'yes'
               ),
             'title' => array(
@@ -314,6 +314,24 @@ function init_woocommerce_webpay() {
               'type' => 'text',
               'description' => __('Url Commerce like : http://www.empresasctm.cl', 'woocommerce')
               ),
+            'url_puntopago' => array(
+              'title' => __('URL Comercio', 'woocommerce'),
+              'type' => 'text',
+              'description' => __('Pagina punto pago', 'woocommerce')
+              'default' => __('https://sandbox.puntopagos.com')
+              ),
+            'key_puntopago' => array(
+              'title' => __('URL Comercio', 'woocommerce'),
+              'type' => 'text',
+              'description' => __('Key punto pago, Ej: kLaQleQUIuwfeXXkxyTC', 'woocommerce')
+              'default' => ''
+              ),
+            'secret_puntopago' => array(
+              'title' => __('URL Comercio', 'woocommerce'),
+              'type' => 'text',
+              'description' => __('Secret token punto pago, Ej: o0PQThCnmmGoWD8KxLARy2MNb577k2IpqFWTMxVC', 'woocommerce')
+              'default' => ''
+              ),                                        
             );
 }
 
@@ -326,7 +344,7 @@ function init_woocommerce_webpay() {
          */
         public function admin_options() {
           ?>
-          <h3><?php _e('WebPay Plus', 'woocommerce'); ?></h3>
+          <h3><?php _e('WebPay Plus + PuntoPagos', 'woocommerce'); ?></h3>
           <p><?php _e('Permite el pago con Tarjetas Bancarias en Chile.', 'woocommerce'); ?></p>
           <table class="form-table">
             <?php
@@ -348,7 +366,7 @@ function init_woocommerce_webpay() {
         }
 
         function receipt_page($order) {
-          echo '<p>' . __('Gracias por tu pedido, por favor haz click a continuación para pagar con webpay', 'woocommerce') . '</p>';
+          echo '<p>' . __('Gracias por tu pedido, por favor haz click a continuación para pagar con webpay y PuntoPagos', 'woocommerce') . '</p>';
           echo $this->generate_webpay_form($order);
         }
 
